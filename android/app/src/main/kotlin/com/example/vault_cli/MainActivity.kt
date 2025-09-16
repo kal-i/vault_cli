@@ -1,4 +1,4 @@
-package com.example.password_vault_console
+package com.example.vault_cli
 
 import io.flutter.embedding.android.FlutterActivity
 

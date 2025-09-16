@@ -121,7 +121,19 @@ class _VaultConsoleViewState extends State<VaultConsoleView> {
         break;
       case 'list':
         if (args.isNotEmpty) {
-          final title = args.first;
+          final flags = _parseFlags(args);
+          final title = flags['t'];
+
+          if (title == null) {
+            _appendLines([
+              '[ERROR]: Missing required flag.',
+              '',
+              'Usage:',
+              ' list - <title>',
+            ]);
+            break;
+          }
+
           vaultBloc.add(GetVaultEntriesByTitleEvent(title: title));
         } else {
           vaultBloc.add(GetAllVaultEntriesEvent());
@@ -192,6 +204,7 @@ class _VaultConsoleViewState extends State<VaultConsoleView> {
                       _appendLine(
                         '[ENTRY FOUND: ${state.vaultEntryEntity!.title}]',
                       );
+                      _appendLines([state.vaultEntryEntity.toString()]);
                     } else {
                       _appendLine('[ENTRY NOT FOUND]');
                     }
