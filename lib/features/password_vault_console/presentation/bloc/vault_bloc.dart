@@ -1,0 +1,147 @@
+import 'package:equatable/equatable.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+import '../../../../core/usecase/no_params.dart';
+import '../../../../core/utils/emit_and_refresh.dart';
+import '../../../../core/utils/emit_result.dart';
+import '../../../../core/utils/id_generator.dart';
+import '../../domain/entities/vault_entry_entity.dart';
+import '../../domain/usecases/add_vault_entry.dart';
+import '../../domain/usecases/delete_vault_entry.dart';
+import '../../domain/usecases/get_all_vault_entries.dart';
+import '../../domain/usecases/get_vault_entries_by_title.dart';
+import '../../domain/usecases/get_vault_entry_by_id.dart';
+import '../../domain/usecases/update_vault_entry.dart';
+
+part 'vault_event.dart';
+part 'vault_state.dart';
+
+class VaultEntryBloc extends Bloc<VaultEvent, VaultState> {
+  VaultEntryBloc({
+    required AddVaultEntry addVaultEntry,
+    required GetAllVaultEntries getAllVaultEntries,
+    required GetVaultEntryById getVaultEntryById,
+    required GetVaultEntriesByTitle getVaultEntriesByTitle,
+    required UpdateVaultEntry updateVaultEntry,
+    required DeleteVaultEntry deleteVaultEntry,
+  }) : _addVaultEntry = addVaultEntry,
+       _getAllVaultEntries = getAllVaultEntries,
+       _getVaultEntryById = getVaultEntryById,
+       _getVaultEntriesByTitle = getVaultEntriesByTitle,
+       _updateVaultEntry = updateVaultEntry,
+       _deleteVaultEntry = deleteVaultEntry,
+       super(InitialVault()) {
+    //on<VaultEvent>((_, emit) => emit(LoadingVault()));
+    on<AddVaultEntryEvent>(_onAddVaultEntry);
+    on<GetAllVaultEntriesEvent>(_onGetAllVaultEntries);
+    on<GetVaultEntryByIdEvent>(_onGetVaultEntryById);
+    on<GetVaultEntriesByTitleEvent>(_onGetVaultEntriesByTitle);
+    on<UpdateVaultEntryEvent>(_onUpdateVaultEntry);
+    on<DeleteVaultEntryEvent>(_onDeleteVaultEntry);
+  }
+
+  final AddVaultEntry _addVaultEntry;
+  final GetAllVaultEntries _getAllVaultEntries;
+  final GetVaultEntryById _getVaultEntryById;
+  final GetVaultEntriesByTitle _getVaultEntriesByTitle;
+  final UpdateVaultEntry _updateVaultEntry;
+  final DeleteVaultEntry _deleteVaultEntry;
+
+  void _onAddVaultEntry(
+    AddVaultEntryEvent event,
+    Emitter<VaultState> emit,
+  ) async {
+    emit(LoadingVault());
+
+    final vaultEntryEntity = VaultEntryEntity(
+      id: IdGenerator.newId(),
+      title: event.title,
+      password: event.password,
+      username: event.username,
+      email: event.email,
+      contactNo: event.contactNo,
+      notes: event.notes,
+      createdAt: DateTime.now(),
+    );
+
+    await emitAndRefresh<VaultState, VaultEntryEntity, VaultEntryEntity>(
+      emit,
+      _addVaultEntry(vaultEntryEntity),
+      () => _getAllVaultEntries(NoParams()),
+      (l) => ErrorVault(message: l),
+      (r) => LoadedVault(vaultEntryEntities: r),
+    );
+  }
+
+  void _onGetAllVaultEntries(
+    GetAllVaultEntriesEvent event,
+    Emitter<VaultState> emit,
+  ) async {
+    emit(LoadingVault());
+
+    await emitResult<VaultState, List<VaultEntryEntity>>(
+      emit,
+      _getAllVaultEntries(NoParams()),
+      onError: (l) => ErrorVault(message: l),
+      onSuccess: (r) => LoadedVault(vaultEntryEntities: r),
+    );
+  }
+
+  void _onGetVaultEntryById(
+    GetVaultEntryByIdEvent event,
+    Emitter<VaultState> emit,
+  ) async {
+    emit(LoadingVault());
+
+    await emitResult<VaultState, VaultEntryEntity?>(
+      emit,
+      _getVaultEntryById(event.id),
+      onError: (l) => ErrorVault(message: l),
+      onSuccess: (r) => EntryLoaded(vaultEntryEntity: r),
+    );
+  }
+
+  void _onGetVaultEntriesByTitle(
+    GetVaultEntriesByTitleEvent event,
+    Emitter<VaultState> emit,
+  ) async {
+    emit(LoadingVault());
+
+    await emitResult<VaultState, List<VaultEntryEntity>>(
+      emit,
+      _getVaultEntriesByTitle(event.title),
+      onError: (l) => ErrorVault(message: l),
+      onSuccess: (r) => LoadedVault(vaultEntryEntities: r),
+    );
+  }
+
+  void _onUpdateVaultEntry(
+    UpdateVaultEntryEvent event,
+    Emitter<VaultState> emit,
+  ) async {
+    emit(LoadingVault());
+
+    await emitAndRefresh<VaultState, VaultEntryEntity, VaultEntryEntity>(
+      emit,
+      _updateVaultEntry(event.vaultEntryEntity),
+      () => _getAllVaultEntries(NoParams()),
+      (l) => ErrorVault(message: l),
+      (r) => LoadedVault(vaultEntryEntities: r),
+    );
+  }
+
+  void _onDeleteVaultEntry(
+    DeleteVaultEntryEvent event,
+    Emitter<VaultState> emit,
+  ) async {
+    emit(LoadingVault());
+
+    await emitAndRefresh<VaultState, bool, VaultEntryEntity>(
+      emit,
+      _deleteVaultEntry(event.id),
+      () => _getAllVaultEntries(NoParams()),
+      (l) => ErrorVault(message: l),
+      (r) => LoadedVault(vaultEntryEntities: r),
+    );
+  }
+}
