@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../init_dependencies.dart';
-import '../../../password_vault_console/presentation/bloc/vault_bloc.dart';
-import '../../../password_vault_console/presentation/views/vault_console_view.dart';
+
+import '../../../vault/presentation/bloc/vault_bloc.dart';
+import '../../../vault/presentation/views/vault_console_view.dart';
 import '../bloc/vault_auth_bloc.dart';
 import '../bloc/vault_auth_event.dart';
 import '../bloc/vault_auth_state.dart';
@@ -61,7 +62,7 @@ class _VaultAuthViewState extends State<VaultAuthView> {
             context,
             MaterialPageRoute(
               builder: (context) => BlocProvider(
-                create: (_) => serviceLocator<VaultEntryBloc>(),
+                create: (_) => serviceLocator<VaultBloc>(),
                 child: const VaultConsoleView(),
               ),
             ),

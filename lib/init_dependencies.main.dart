@@ -40,7 +40,6 @@ void _registerVaultAuthDependencies() {
     );
 }
 
-/// Vault entries DB + local datasource (does no depend on SecretKey yet)
 Future<void> _registerVaultLocalDependencies() async {
   final db = await VaultDatabase.create();
 
@@ -92,8 +91,8 @@ void setupVaultRepositoryAndBloc(SecretKey secretKey) {
   _registerLazySingleton<DeleteVaultEntry>(
     () => DeleteVaultEntry(vaultRepository: serviceLocator()),
   );
-  _registerFactory<VaultEntryBloc>(
-    () => VaultEntryBloc(
+  _registerFactory<VaultBloc>(
+    () => VaultBloc(
       addVaultEntry: serviceLocator(),
       getAllVaultEntries: serviceLocator(),
       getVaultEntryById: serviceLocator(),
@@ -115,7 +114,7 @@ void resetVaultDependencies() {
   _safeUnregister<GetVaultEntriesByTitle>();
   _safeUnregister<UpdateVaultEntry>();
   _safeUnregister<DeleteVaultEntry>();
-  _safeUnregister<VaultEntryBloc>();
+  _safeUnregister<VaultBloc>();
 }
 
 /// Helper function to safely register a lazy singleton dependency if it's not registered yet.

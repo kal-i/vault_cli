@@ -72,7 +72,7 @@ class _VaultConsoleViewState extends State<VaultConsoleView> {
   void _handleCommand(String input) {
     if (input.trim().isEmpty) return;
 
-    final vaultBloc = context.read<VaultEntryBloc>();
+    final vaultBloc = context.read<VaultBloc>();
     final parts = input.trim().split(' ');
     final command = parts.first.toLowerCase();
     final args = parts.length > 1
@@ -176,7 +176,7 @@ class _VaultConsoleViewState extends State<VaultConsoleView> {
         child: Column(
           children: [
             Expanded(
-              child: BlocListener<VaultEntryBloc, VaultState>(
+              child: BlocListener<VaultBloc, VaultState>(
                 listener: (context, state) {
                   if (state is LoadingVault) {
                     _appendLine('[PROCESSING REQUEST...]');

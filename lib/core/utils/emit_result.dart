@@ -35,14 +35,11 @@ import '../errors/failure.dart';
 /// - If it fails → emit `MyErrorState`.
 /// - If it succeeds → emit `MyLoadedState` with the result.
 Future<void> emitResult<TState, TResult>(
-    Emitter<TState> emit,
-    Future<Either<Failure, TResult>> future, {
-      required TState Function(String message) onError,
-      required TState Function(TResult result) onSuccess,
-    }) async {
+  Emitter<TState> emit,
+  Future<Either<Failure, TResult>> future, {
+  required TState Function(String message) onError,
+  required TState Function(TResult result) onSuccess,
+}) async {
   final result = await future;
-  result.fold(
-        (l) => emit(onError(l.message)),
-        (r) => emit(onSuccess(r)),
-  );
+  result.fold((l) => emit(onError(l.message)), (r) => emit(onSuccess(r)));
 }

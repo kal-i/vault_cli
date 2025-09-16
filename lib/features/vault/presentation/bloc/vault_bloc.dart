@@ -16,8 +16,8 @@ import '../../domain/usecases/update_vault_entry.dart';
 part 'vault_event.dart';
 part 'vault_state.dart';
 
-class VaultEntryBloc extends Bloc<VaultEvent, VaultState> {
-  VaultEntryBloc({
+class VaultBloc extends Bloc<VaultEvent, VaultState> {
+  VaultBloc({
     required AddVaultEntry addVaultEntry,
     required GetAllVaultEntries getAllVaultEntries,
     required GetVaultEntryById getVaultEntryById,

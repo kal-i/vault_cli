@@ -1,6 +1,6 @@
 import 'package:cryptography/cryptography.dart';
 
-import '../../features/password_vault_console/domain/entities/vault_entry_entity.dart';
+import '../../features/vault/domain/entities/vault_entry_entity.dart';
 import '../services/crypto_service.dart';
 
 class VaultEntryCryptoMapper {

@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:cryptography/cryptography.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
@@ -12,18 +10,18 @@ import 'features/auth/domain/repository/auth_repository.dart';
 import 'features/auth/domain/usecases/initialize_vault.dart';
 import 'features/auth/domain/usecases/unlock_vault.dart';
 import 'features/auth/presentation/bloc/vault_auth_bloc.dart';
-import 'features/password_vault_console/data/data_sources/local/db_utils.dart';
-import 'features/password_vault_console/data/data_sources/local/vault_database.dart';
-import 'features/password_vault_console/data/data_sources/local/vault_local_data_source.dart';
-import 'features/password_vault_console/data/data_sources/local/vault_local_data_source_impl.dart';
-import 'features/password_vault_console/data/repository/vault_repository_impl.dart';
-import 'features/password_vault_console/domain/repository/vault_repository.dart';
-import 'features/password_vault_console/domain/usecases/add_vault_entry.dart';
-import 'features/password_vault_console/domain/usecases/delete_vault_entry.dart';
-import 'features/password_vault_console/domain/usecases/get_all_vault_entries.dart';
-import 'features/password_vault_console/domain/usecases/get_vault_entries_by_title.dart';
-import 'features/password_vault_console/domain/usecases/get_vault_entry_by_id.dart';
-import 'features/password_vault_console/domain/usecases/update_vault_entry.dart';
-import 'features/password_vault_console/presentation/bloc/vault_bloc.dart';
+import 'features/vault/data/data_sources/local/db_utils.dart';
+import 'features/vault/data/data_sources/local/vault_database.dart';
+import 'features/vault/data/data_sources/local/vault_local_data_source.dart';
+import 'features/vault/data/data_sources/local/vault_local_data_source_impl.dart';
+import 'features/vault/data/repository/vault_repository_impl.dart';
+import 'features/vault/domain/repository/vault_repository.dart';
+import 'features/vault/domain/usecases/add_vault_entry.dart';
+import 'features/vault/domain/usecases/delete_vault_entry.dart';
+import 'features/vault/domain/usecases/get_all_vault_entries.dart';
+import 'features/vault/domain/usecases/get_vault_entries_by_title.dart';
+import 'features/vault/domain/usecases/get_vault_entry_by_id.dart';
+import 'features/vault/domain/usecases/update_vault_entry.dart';
+import 'features/vault/presentation/bloc/vault_bloc.dart';
 
 part 'init_dependencies.main.dart';

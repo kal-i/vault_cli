@@ -30,17 +30,14 @@ class CryptoService {
     );
   }
 
-  /// Encrypt a string using AES-GCM
-  /// Returns a base64 encoded string: nonce:ciphertext
+  /// Encrypt a string using AES-GCM and returns a base64 encoded string: nonce:ciphertext
   Future<String> encryptString(SecretKey key, String plainText) async {
-    print('key: $key - encryptedData: $plainText');
     final nonce = _generateNonce();
     final secretBox = await _aesGcm.encrypt(
       utf8.encode(plainText),
       secretKey: key,
       nonce: nonce,
     );
-    print('nonce: $nonce - secretBox: $secretBox');
 
     // Store nonce + cipherText + mac together
     final combined = {
@@ -49,26 +46,19 @@ class CryptoService {
       'mac': base64Encode(secretBox.mac.bytes),
     };
 
-    print('combined: $combined');
-
     return jsonEncode(combined);
   }
 
   /// Decrypt a previously encrypted string using AES-GCM
   Future<String> decryptString(SecretKey key, String encryptedData) async {
-    print('key: $key - encryptedData: $encryptedData');
     final decoded = jsonDecode(encryptedData);
-    print('decoded: $decoded');
     final nonce = base64Decode(decoded['nonce']);
     final cipherText = base64Decode(decoded['cipherText']);
     final mac = Mac(base64Decode(decoded['mac']));
-    print('nonce: $nonce - cipherText: $cipherText - mac: $mac');
 
     final secretBox = SecretBox(cipherText, nonce: nonce, mac: mac);
-    print('secretBox: $secretBox');
 
     final clearText = await _aesGcm.decrypt(secretBox, secretKey: key);
-    print('clearText: $clearText');
 
     return utf8.decode(clearText);
   }

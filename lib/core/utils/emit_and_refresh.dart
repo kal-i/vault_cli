@@ -47,21 +47,15 @@ import '../errors/failure.dart';
 /// - If delete succeeds → call `getAllItems()`, then emit `MyLoadedState`
 ///   with the refreshed list.
 Future<void> emitAndRefresh<TState, TMainResult, TRefreshResult>(
-    Emitter<TState> emit,
-    Future<Either<Failure, TMainResult>> future,
-    Future<Either<Failure, List<TRefreshResult>>> Function() refresh,
-    TState Function(String) onError,
-    TState Function(List<TRefreshResult>) onSuccess,
-    ) async {
+  Emitter<TState> emit,
+  Future<Either<Failure, TMainResult>> future,
+  Future<Either<Failure, List<TRefreshResult>>> Function() refresh,
+  TState Function(String) onError,
+  TState Function(List<TRefreshResult>) onSuccess,
+) async {
   final result = await future;
-  await result.fold(
-        (l) async => emit(onError(l.message)),
-        (_) async {
-      final refreshed = await refresh();
-      refreshed.fold(
-            (l) => emit(onError(l.message)),
-            (r) => emit(onSuccess(r)),
-      );
-    },
-  );
+  await result.fold((l) async => emit(onError(l.message)), (_) async {
+    final refreshed = await refresh();
+    refreshed.fold((l) => emit(onError(l.message)), (r) => emit(onSuccess(r)));
+  });
 }
