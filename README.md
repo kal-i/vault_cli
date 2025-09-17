@@ -6,7 +6,7 @@ A simple, secure, **offline**, CLI-based password vault built with **Flutter (Da
 That being said, you can:
 - Initialize a secure vault with a **master password**
 - Store, encrypt, and manage password entries
-- Unlock the vault whenever you need to acces your data
+- Unlock the vault whenever you need to access your data
 
 ## 🔒Security
 Your data is protected with **industry-standard cryptography**:
@@ -30,6 +30,27 @@ Your data is protected with **industry-standard cryptography**:
 - Auto-lock vault after inactivity
 - Clipboard integration for easy copying
 - Optional export/import of vault data (encrypted)
+
+## 🖼 Screenshots
+
+**Master Password Setup**  
+![Master Password Setup](assets/images/master_password_setup.png)
+
+**Help Command**  
+![Help Command](assets/images/help_command.png)
+
+**Adding an Entry**  
+![Add Entry](assets/images/add_entry.png)
+
+**Listing Entries**  
+![List Entries](assets/images/list_entries.png)
+
+**Updating an Entry**  
+![Update Entry](assets/images/update_entry.png)
+
+**Deleting an Entry**
+![Delete Entry](assets/images/delete_entry.png)
+
 
 ## 🧑‍💻 Tech Stack
 - **Flutter/Dart**
