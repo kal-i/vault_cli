@@ -21,13 +21,12 @@ Your data is protected with **industry-standard cryptography**:
 ## 📦 Features (Current)
 - Master password setup and vault initialization
 - Vault unlocking with secure key derivation
-- Add and view entries (encrypted)
+- Add, update, delete, and view entries (encrypted)
 - Local persistence (SQLite for entries + secure storage for keys)
+- CLI UI improvements (syntax highlighting, better prompts)
 
 ## 🛠 Planned Features
-- Update and delete password entries
 - Master password recovery/reset
-- CLI UI improvements (syntax highlighting, better prompts)
 - Auto-lock vault after inactivity
 - Clipboard integration for easy copying
 - Optional export/import of vault data (encrypted)
