@@ -15,6 +15,6 @@ class AddVaultEntry implements Usecase<VaultEntryEntity, VaultEntryEntity> {
   Future<Either<Failure, VaultEntryEntity>> call(
     VaultEntryEntity params,
   ) {
-    return vaultRepository.addEntry(params);
+    return vaultRepository.addEntry(entry:  params);
   }
 }

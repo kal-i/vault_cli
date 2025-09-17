@@ -56,12 +56,34 @@ final class GetVaultEntriesByTitleEvent extends VaultEvent {
 }
 
 final class UpdateVaultEntryEvent extends VaultEvent {
-  const UpdateVaultEntryEvent({required this.vaultEntryEntity});
+  const UpdateVaultEntryEvent({
+    required this.id,
+    this.title,
+    this.password,
+    this.username,
+    this.email,
+    this.contactNo,
+    this.notes,
+  });
 
-  final VaultEntryEntity vaultEntryEntity;
+  final String id;
+  final String? title;
+  final String? password;
+  final String? username;
+  final String? email;
+  final String? contactNo;
+  final String? notes;
 
   @override
-  List<Object?> get props => [vaultEntryEntity];
+  List<Object?> get props => [
+    id,
+    title,
+    password,
+    username,
+    email,
+    contactNo,
+    notes,
+  ];
 }
 
 final class DeleteVaultEntryEvent extends VaultEvent {

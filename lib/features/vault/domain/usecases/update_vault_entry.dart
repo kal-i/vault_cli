@@ -13,6 +13,6 @@ class UpdateVaultEntry implements Usecase<VaultEntryEntity, VaultEntryEntity> {
 
   @override
   Future<Either<Failure, VaultEntryEntity>> call(VaultEntryEntity params) {
-    return vaultRepository.updateEntry(params);
+    return vaultRepository.updateEntry(entry: params);
   }
 }

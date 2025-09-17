@@ -20,20 +20,22 @@ class VaultRepositoryImpl implements VaultRepository {
   final VaultEntryCryptoMapper vaultEntryCryptoMapper;
 
   @override
-  Future<Either<Failure, VaultEntryEntity>> addEntry(VaultEntryEntity entry) {
+  Future<Either<Failure, VaultEntryEntity>> addEntry({
+    required VaultEntryEntity entry,
+  }) {
     return guardRepositoryCall(() async {
       final encryptedEntity = await vaultEntryCryptoMapper.encryptEntity(entry);
       final driftEntry = _toDrift(encryptedEntity);
 
-      await vaultLocalDataSource.insertVaultEntry(driftEntry);
+      await vaultLocalDataSource.insertVaultEntry(entry: driftEntry);
       return entry;
     });
   }
 
   @override
-  Future<Either<Failure, bool>> deleteEntry(String id) {
+  Future<Either<Failure, bool>> deleteEntry({required String id}) {
     return guardRepositoryCall(() async {
-      return await vaultLocalDataSource.deleteVaultEntry(id) == 1
+      return await vaultLocalDataSource.deleteVaultEntry(id: id) == 1
           ? true
           : false;
     });
@@ -49,9 +51,11 @@ class VaultRepositoryImpl implements VaultRepository {
   }
 
   @override
-  Future<Either<Failure, VaultEntryEntity?>> getEntryById(String id) {
+  Future<Either<Failure, VaultEntryEntity?>> getEntryById({
+    required String id,
+  }) {
     return guardRepositoryCall(() async {
-      final driftEntry = await vaultLocalDataSource.getVaultEntryById(id);
+      final driftEntry = await vaultLocalDataSource.getVaultEntryById(id: id);
       if (driftEntry == null) return null;
 
       return _decryptVaultEntry(driftEntry);
@@ -59,12 +63,12 @@ class VaultRepositoryImpl implements VaultRepository {
   }
 
   @override
-  Future<Either<Failure, List<VaultEntryEntity>>> getEntryByTitle(
-    String title,
-  ) {
+  Future<Either<Failure, List<VaultEntryEntity>>> getEntryByTitle({
+    required String title,
+  }) {
     return guardRepositoryCall(() async {
       final driftEntries = await vaultLocalDataSource.getVaultEntriesByTitle(
-        title,
+        title: title,
       );
 
       return await _decryptVaultEntries(driftEntries);
@@ -72,14 +76,16 @@ class VaultRepositoryImpl implements VaultRepository {
   }
 
   @override
-  Future<Either<Failure, VaultEntryEntity>> updateEntry(
-    VaultEntryEntity entry,
-  ) {
+  Future<Either<Failure, VaultEntryEntity>> updateEntry({
+    required VaultEntryEntity entry,
+  }) {
     return guardRepositoryCall(() async {
       final encryptedEntity = await vaultEntryCryptoMapper.encryptEntity(entry);
       final driftEntry = _toDrift(encryptedEntity);
 
-      final success = await vaultLocalDataSource.updateVaultEntry(driftEntry);
+      final success = await vaultLocalDataSource.updateVaultEntry(
+        entry: driftEntry,
+      );
       if (!success) {
         throw const DatabaseFailure(message: 'Failed to update an entry');
       }
@@ -116,6 +122,7 @@ class VaultRepositoryImpl implements VaultRepository {
     title: Value(e.title),
     contactNo: Value(e.contactNo),
     email: Value(e.email),
+    username: Value(e.username),
     password: Value(e.password),
     notes: Value(e.notes),
     createdAt: Value(e.createdAt),

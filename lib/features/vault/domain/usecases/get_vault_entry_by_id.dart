@@ -13,6 +13,6 @@ class GetVaultEntryById implements Usecase<VaultEntryEntity?, String> {
 
   @override
   Future<Either<Failure, VaultEntryEntity?>> call(String params) {
-    return vaultRepository.getEntryById(params);
+    return vaultRepository.getEntryById(id: params);
   }
 }

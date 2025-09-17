@@ -11,7 +11,7 @@ class VaultLocalDataSourceImpl implements VaultLocalDataSource {
   final VaultDatabase db;
 
   @override
-  Future<int> deleteVaultEntry(String id) {
+  Future<int> deleteVaultEntry({required String id}) {
     return guardDataSourceCall(
       () async {
         return await (db.delete(
@@ -37,7 +37,7 @@ class VaultLocalDataSourceImpl implements VaultLocalDataSource {
   }
 
   @override
-  Future<List<VaultEntry>> getVaultEntriesByTitle(String title) {
+  Future<List<VaultEntry>> getVaultEntriesByTitle({required String title}) {
     return guardDataSourceCall(
       () async {
         return await (db.select(
@@ -51,7 +51,7 @@ class VaultLocalDataSourceImpl implements VaultLocalDataSource {
   }
 
   @override
-  Future<VaultEntry?> getVaultEntryById(String id) {
+  Future<VaultEntry?> getVaultEntryById({required String id}) {
     return guardDataSourceCall(
       () async {
         return await (db.select(
@@ -65,7 +65,7 @@ class VaultLocalDataSourceImpl implements VaultLocalDataSource {
   }
 
   @override
-  Future<void> insertVaultEntry(VaultEntriesCompanion entry) async {
+  Future<void> insertVaultEntry({required VaultEntriesCompanion entry}) async {
     return guardDataSourceCall(
       () async {
         await db.into(db.vaultEntries).insert(entry);
@@ -77,7 +77,7 @@ class VaultLocalDataSourceImpl implements VaultLocalDataSource {
   }
 
   @override
-  Future<bool> updateVaultEntry(VaultEntriesCompanion entry) async {
+  Future<bool> updateVaultEntry({required VaultEntriesCompanion entry}) async {
     return guardDataSourceCall(
       () async {
         return await db.update(db.vaultEntries).replace(entry);

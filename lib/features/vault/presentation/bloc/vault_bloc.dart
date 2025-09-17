@@ -31,7 +31,6 @@ class VaultBloc extends Bloc<VaultEvent, VaultState> {
        _updateVaultEntry = updateVaultEntry,
        _deleteVaultEntry = deleteVaultEntry,
        super(InitialVault()) {
-    //on<VaultEvent>((_, emit) => emit(LoadingVault()));
     on<AddVaultEntryEvent>(_onAddVaultEntry);
     on<GetAllVaultEntriesEvent>(_onGetAllVaultEntries);
     on<GetVaultEntryByIdEvent>(_onGetVaultEntryById);
@@ -121,12 +120,37 @@ class VaultBloc extends Bloc<VaultEvent, VaultState> {
   ) async {
     emit(LoadingVault());
 
-    await emitAndRefresh<VaultState, VaultEntryEntity, VaultEntryEntity>(
-      emit,
-      _updateVaultEntry(event.vaultEntryEntity),
-      () => _getAllVaultEntries(NoParams()),
-      (l) => ErrorVault(message: l),
-      (r) => LoadedVault(vaultEntryEntities: r),
+    final getExistingEntryResult = await _getVaultEntryById(event.id);
+
+    await getExistingEntryResult.fold(
+      (l) async => emit(ErrorVault(message: l.message)),
+      (r) async {
+        final existingEntry = r;
+        if (existingEntry == null) {
+          emit(const ErrorVault(message: '[ERROR]: ENTRY NOT FOUND'));
+          return;
+        }
+
+        final updatedEntry = VaultEntryEntity(
+          id: existingEntry.id,
+          title: event.title ?? existingEntry.title,
+          password: event.password ?? existingEntry.password,
+          username: event.username ?? existingEntry.username,
+          email: event.email ?? existingEntry.email,
+          contactNo: event.contactNo ?? existingEntry.contactNo,
+          notes: event.notes ?? existingEntry.notes,
+          createdAt: existingEntry.createdAt,
+          updatedAt: DateTime.now(),
+        );
+
+        await emitAndRefresh(
+          emit,
+          _updateVaultEntry(updatedEntry),
+          () => _getAllVaultEntries(NoParams()),
+          (l) => ErrorVault(message: l),
+          (r) => LoadedVault(vaultEntryEntities: r),
+        );
+      },
     );
   }
 

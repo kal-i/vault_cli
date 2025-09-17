@@ -48,8 +48,6 @@ Future<void> _registerVaultLocalDependencies() async {
 
     final storage = serviceLocator<SecureStorageService>();
     await storage.clear();
-
-    debugPrint('Vault completely reset (table + secure storage');
   }
 
   serviceLocator

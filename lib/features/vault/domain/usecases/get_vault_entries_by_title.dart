@@ -13,6 +13,6 @@ class GetVaultEntriesByTitle implements Usecase<List<VaultEntryEntity>, String> 
 
   @override
   Future<Either<Failure, List<VaultEntryEntity>>> call(String params) {
-    return vaultRepository.getEntryByTitle(params);
+    return vaultRepository.getEntryByTitle(title: params);
   }
 }

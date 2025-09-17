@@ -12,6 +12,6 @@ class DeleteVaultEntry implements Usecase<bool, String> {
 
   @override
   Future<Either<Failure, bool>> call(String params) {
-    return vaultRepository.deleteEntry(params);
+    return vaultRepository.deleteEntry(id: params);
   }
 }
