@@ -1,13 +1,13 @@
 part of 'init_dependencies.dart';
 
-const bool kResetVaultOnStartup = true;
 final serviceLocator = GetIt.instance;
 
 Future<void> initializeDependencies() async {
   _registerCoreDependencies();
   _registerServicesDependencies();
-  _registerVaultAuthDependencies();
+  _registerStartupDependencies();
   await _registerVaultLocalDependencies();
+  _registerVaultAuthDependencies();
 }
 
 void _registerCoreDependencies() {}
@@ -18,26 +18,10 @@ void _registerServicesDependencies() {
     ..registerLazySingleton<CryptoService>(() => CryptoService());
 }
 
-void _registerVaultAuthDependencies() {
-  serviceLocator
-    ..registerLazySingleton<AuthRepository>(
-      () => AuthRepositoryImpl(
-        secureStorageService: serviceLocator(),
-        cryptoService: serviceLocator(),
-      ),
-    )
-    ..registerLazySingleton<InitializeVault>(
-      () => InitializeVault(authRepository: serviceLocator()),
-    )
-    ..registerLazySingleton<UnlockVault>(
-      () => UnlockVault(authRepository: serviceLocator()),
-    )
-    ..registerFactory<VaultAuthBloc>(
-      () => VaultAuthBloc(
-        initializeVault: serviceLocator(),
-        unlockVault: serviceLocator(),
-      ),
-    );
+void _registerStartupDependencies() {
+  _registerFactory<StartupBloc>(
+    () => StartupBloc(secureStorageService: serviceLocator()),
+  );
 }
 
 Future<void> _registerVaultLocalDependencies() async {
@@ -57,8 +41,44 @@ Future<void> _registerVaultLocalDependencies() async {
     );
 }
 
+void _registerVaultAuthDependencies() {
+  serviceLocator
+    ..registerLazySingleton<AuthRepository>(
+      () => AuthRepositoryImpl(
+        secureStorageService: serviceLocator(),
+        cryptoService: serviceLocator(),
+        vaultLocalDataSource: serviceLocator(),
+      ),
+    )
+    ..registerLazySingleton<InitializeVault>(
+      () => InitializeVault(authRepository: serviceLocator()),
+    )
+    ..registerLazySingleton<UnlockVault>(
+      () => UnlockVault(authRepository: serviceLocator()),
+    )
+    ..registerLazySingleton<RetrieveRecoveryQuestion>(
+      () => RetrieveRecoveryQuestion(authRepository: serviceLocator()),
+    )
+    ..registerLazySingleton<VerifyRecoveryAnswer>(
+      () => VerifyRecoveryAnswer(authRepository: serviceLocator()),
+    )
+    ..registerLazySingleton<SetupNewMasterPassword>(
+      () => SetupNewMasterPassword(authRepository: serviceLocator()),
+    )
+    ..registerFactory<VaultAuthBloc>(
+      () => VaultAuthBloc(
+        initializeVault: serviceLocator(),
+        unlockVault: serviceLocator(),
+        retrieveRecoveryQuestion: serviceLocator(),
+        verifyRecoveryAnswer: serviceLocator(),
+        setupNewMasterPassword: serviceLocator(),
+      ),
+    );
+}
+
 void setupVaultRepositoryAndBloc(SecretKey secretKey) {
-  // resetVaultDependencies();
+  // Always reset these dependencies, especially since it relies on a [SecretKey].
+  resetVaultDependencies();
   _registerLazySingleton<VaultEntryCryptoMapper>(
     () => VaultEntryCryptoMapper(
       cryptoService: serviceLocator(),
