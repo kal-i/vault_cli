@@ -10,8 +10,8 @@ Future<T> guardDataSourceCall<T>(
 }) async {
   try {
     return await call();
-  } catch (e, stackTrace) {
-    developer.log('Error: $e', error: e, stackTrace: stackTrace, name: name);
+  } catch (e, st) {
+    developer.log('[$name] Error: $e', error: e, stackTrace: st, name: name);
 
     if (mapError != null) throw mapError(e);
 
