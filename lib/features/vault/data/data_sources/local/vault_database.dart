@@ -7,7 +7,7 @@ import 'package:path_provider/path_provider.dart';
 
 import 'tables/vault_entries.dart';
 
-part 'vault_database.g.dart';
+part '../../core/database/vault_database.g.dart';
 
 @DriftDatabase(tables: [VaultEntries])
 class VaultDatabase extends _$VaultDatabase {
