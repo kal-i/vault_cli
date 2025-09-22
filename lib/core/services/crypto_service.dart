@@ -30,6 +30,13 @@ class CryptoService {
     );
   }
 
+  /// Hashes a string using SHA-256 and returns a base64-encoded hash
+  Future<String> hashString(String input) async {
+    final algorithm = Sha256();
+    final hash = await algorithm.hash(utf8.encode(input));
+    return base64Encode(hash.bytes);
+  }
+
   /// Encrypt a string using AES-GCM and returns a base64 encoded string: nonce:ciphertext
   Future<String> encryptString(SecretKey key, String plainText) async {
     final nonce = _generateNonce();
