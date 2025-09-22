@@ -9,8 +9,18 @@ abstract interface class AuthRepository {
   });
 
   Future<Either<Failure, dynamic>> unlockVault({
-    required MasterPasswordEntity masterPassword,
+    required String masterPassword,
   });
 
-  // TODO: implement recovery
+  Future<Either<Failure, String>> retrieveRecoveryQuestion();
+
+  Future<Either<Failure, bool>> verifyRecoveryAnswer({
+    required String recoveryAnswer,
+  });
+
+  Future<Either<Failure, dynamic>> setupNewMasterPassword({
+    required String newMasterPassword,
+    String? newRecoveryQuestion,
+    String? newRecoveryAnswer,
+  });
 }

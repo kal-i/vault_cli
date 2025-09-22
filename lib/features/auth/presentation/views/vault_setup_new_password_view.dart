@@ -5,7 +5,6 @@ import '../../../../core/common/components/custom_filled_button.dart';
 import '../../../../core/common/components/custom_text_form_field.dart';
 import '../../../../core/utils/snackbar_util.dart';
 import '../../../../init_dependencies.dart';
-
 import '../../../vault/presentation/bloc/vault_bloc.dart';
 import '../../../vault/presentation/views/vault_console_view.dart';
 import '../bloc/vault_auth_bloc.dart';
@@ -13,18 +12,20 @@ import '../bloc/vault_auth_event.dart';
 import '../bloc/vault_auth_state.dart';
 import 'vault_base_auth_view.dart';
 
-class VaultSetupView extends StatefulWidget {
-  const VaultSetupView({super.key});
+class VaultSetupNewPasswordView extends StatefulWidget {
+  const VaultSetupNewPasswordView({super.key});
 
   @override
-  State<VaultSetupView> createState() => _VaultSetupViewState();
+  State<VaultSetupNewPasswordView> createState() =>
+      _VaultSetupNewPasswordViewState();
 }
 
-class _VaultSetupViewState extends State<VaultSetupView> {
+class _VaultSetupNewPasswordViewState extends State<VaultSetupNewPasswordView> {
   late final VaultAuthBloc _vaultAuthBloc;
 
   final _formKey = GlobalKey<FormState>();
-  final _masterPasswordController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
   final _recoveryQuestionController = TextEditingController();
   final _recoveryAnswerController = TextEditingController();
 
@@ -34,21 +35,29 @@ class _VaultSetupViewState extends State<VaultSetupView> {
     _vaultAuthBloc = context.read<VaultAuthBloc>();
   }
 
-  void _setup() {
-    if (_formKey.currentState!.validate()) {
-      _vaultAuthBloc.add(
-        InitializeVaultEvent(
-          masterPassword: _masterPasswordController.text,
-          recoveryQuestion: _recoveryQuestionController.text,
-          recoveryAnswer: _recoveryAnswerController.text,
-        ),
-      );
+  void _confirm() {
+    if (_formKey.currentState!.mounted) {
+      if (_passwordController.text != _confirmPasswordController.text) {
+        showSnackBar(
+          context: context,
+          message: 'Password and confirm password did not match',
+        );
+      } else {
+        _vaultAuthBloc.add(
+          SetupNewMasterPasswordEvent(
+            newMasterPassword: _passwordController.text,
+            newRecoveryQuestion: _recoveryQuestionController.text,
+            newRecoveryAnswer: _recoveryAnswerController.text,
+          ),
+        );
+      }
     }
   }
 
   @override
   void dispose() {
-    _masterPasswordController.dispose();
+    _passwordController.dispose();
+    _confirmPasswordController.dispose();
     _recoveryQuestionController.dispose();
     _recoveryAnswerController.dispose();
     super.dispose();
@@ -59,7 +68,7 @@ class _VaultSetupViewState extends State<VaultSetupView> {
     return BlocListener<VaultAuthBloc, VaultAuthState>(
       listener: (context, state) async {
         if (state is VaultAuthSuccess) {
-          showSnackBar(context: context, message: 'Vault has been setup!');
+          showSnackBar(context: context, message: 'Password setup successful');
 
           await Future.delayed(const Duration(seconds: 3));
 
@@ -81,35 +90,33 @@ class _VaultSetupViewState extends State<VaultSetupView> {
         }
       },
       child: VaultBaseAuthView(
-        title: 'vault_cli >> setup',
-        mainChildWidget: Column(
-          children: [
-            Form(
-              key: _formKey,
-              child: Column(
-                spacing: 10.0,
-                children: [
-                  CustomTextFormField(
-                    controller: _masterPasswordController,
-                    label: 'Master Password',
-                    isObscured: true,
-                  ),
-                  CustomTextFormField(
-                    controller: _recoveryQuestionController,
-                    label: 'Recovery Question',
-                  ),
-                  CustomTextFormField(
-                    controller: _recoveryAnswerController,
-                    label: 'Recovery Answer',
-                  ),
-                ],
+        title: 'vault_cli >> recovery >> setup_new_password',
+        mainChildWidget: Form(
+          key: _formKey,
+          child: Column(
+            children: [
+              CustomTextFormField(
+                controller: _passwordController,
+                label: 'Password',
               ),
-            ),
-          ],
+              CustomTextFormField(
+                controller: _confirmPasswordController,
+                label: 'Confirm Password',
+              ),
+              CustomTextFormField(
+                controller: _recoveryQuestionController,
+                label: 'Recovery Question (Optional)',
+              ),
+              CustomTextFormField(
+                controller: _recoveryAnswerController,
+                label: 'Recovery Answer (Optional)',
+              ),
+            ],
+          ),
         ),
         footerActionWidget: CustomFilledButton(
-          onTap: _setup,
-          label: 'Setup',
+          onTap: _confirm,
+          label: 'Confirm',
         ),
       ),
     );

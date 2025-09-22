@@ -28,3 +28,21 @@ final class VaultAuthError extends VaultAuthState {
   @override
   List<Object?> get props => [message];
 }
+
+final class VaultRetrievedRecoveryQuestion extends VaultAuthState {
+  const VaultRetrievedRecoveryQuestion({required this.recoveryQuestion});
+
+  final String recoveryQuestion;
+
+  @override
+  List<Object?> get props => [recoveryQuestion];
+}
+
+final class VaultVerifiedRecoveryAnswer extends VaultAuthState {
+  const VaultVerifiedRecoveryAnswer({required this.isSuccessful});
+
+  final bool isSuccessful;
+
+  @override
+  List<Object?> get props => [isSuccessful];
+}
