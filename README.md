@@ -17,6 +17,10 @@ Your data is protected with **industry-standard cryptography**:
 - **AES-GCM-256** encryption for entries
     - Provides confidentiality and integrity with authenticated encryption
     - Each entry uses a unique random nonce
+- **SHA-256** for hashing
+    - To ensure data won't be retrieved to its original form even if local storage is compromised
+
+## Featured Commands
 
 ## 📦 Features (Current)
 - Master password setup and vault initialization
@@ -24,10 +28,12 @@ Your data is protected with **industry-standard cryptography**:
 - Add, update, delete, and view entries (encrypted)
 - Local persistence (SQLite for entries + secure storage for keys)
 - CLI UI improvements (syntax highlighting, better prompts)
+- Master password recovery/reset
+- Disable screenshot (Android)
 
 ## 🛠 Planned Features
-- Master password recovery/reset
 - Auto-lock vault after inactivity
+- Disable screenshot (iOS)
 - Clipboard integration for easy copying
 - Optional export/import of vault data (encrypted)
 
