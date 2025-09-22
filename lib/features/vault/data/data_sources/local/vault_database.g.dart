@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of '../../../../../core/database/vault_database.dart';
+part of 'vault_database.dart';
 
 // ignore_for_file: type=lint
 class $VaultEntriesTable extends VaultEntries

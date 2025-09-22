@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../init_dependencies.dart';
-import '../../domain/entities/vault_entry_entity.dart';
+import '../../domain/entity/vault_entry_entity.dart';
 import '../bloc/vault_bloc.dart';
 import '../components/console_text.dart';
 import '../components/console_text_field.dart';

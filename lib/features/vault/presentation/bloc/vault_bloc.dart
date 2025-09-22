@@ -5,7 +5,7 @@ import '../../../../core/usecase/no_params.dart';
 import '../../../../core/utils/emit_and_refresh.dart';
 import '../../../../core/utils/emit_result.dart';
 import '../../../../core/utils/id_generator.dart';
-import '../../domain/entities/vault_entry_entity.dart';
+import '../../domain/entity/vault_entry_entity.dart';
 import '../../domain/usecases/add_vault_entry.dart';
 import '../../domain/usecases/delete_vault_entry.dart';
 import '../../domain/usecases/get_all_vault_entries.dart';

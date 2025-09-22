@@ -1,11 +1,12 @@
-import 'package:drift/drift.dart';
 import 'package:fpdart/fpdart.dart';
 
 import '../../../../core/errors/database_failure.dart';
 import '../../../../core/errors/failure.dart';
 import '../../../../core/utils/vault_entry_crypto_mapper.dart';
 import '../../../../core/utils/guard_repository_call.dart';
-import '../../domain/entities/vault_entry_entity.dart';
+import '../../../../core/utils/vault_entry_entity_extensions.dart';
+import '../../../../core/utils/vault_entry_extensions.dart';
+import '../../domain/entity/vault_entry_entity.dart';
 import '../../domain/repository/vault_repository.dart';
 import '../data_sources/local/vault_database.dart';
 import '../data_sources/local/vault_local_data_source.dart';
@@ -25,9 +26,9 @@ class VaultRepositoryImpl implements VaultRepository {
   }) {
     return guardRepositoryCall(() async {
       final encryptedEntity = await vaultEntryCryptoMapper.encryptEntity(entry);
-      final driftEntry = _toDrift(encryptedEntity);
+      final vaultEntriesCompanion = encryptedEntity.toVaultEntriesCompanion();
 
-      await vaultLocalDataSource.insertVaultEntry(entry: driftEntry);
+      await vaultLocalDataSource.insertVaultEntry(entry: vaultEntriesCompanion);
       return entry;
     });
   }
@@ -44,9 +45,9 @@ class VaultRepositoryImpl implements VaultRepository {
   @override
   Future<Either<Failure, List<VaultEntryEntity>>> getAllEntries() {
     return guardRepositoryCall(() async {
-      final driftEntities = await vaultLocalDataSource.getAllVaultEntries();
+      final vaultEntries = await vaultLocalDataSource.getAllVaultEntries();
 
-      return _decryptVaultEntries(driftEntities);
+      return _decryptVaultEntries(vaultEntries);
     });
   }
 
@@ -55,10 +56,10 @@ class VaultRepositoryImpl implements VaultRepository {
     required String id,
   }) {
     return guardRepositoryCall(() async {
-      final driftEntry = await vaultLocalDataSource.getVaultEntryById(id: id);
-      if (driftEntry == null) return null;
+      final vaultEntry = await vaultLocalDataSource.getVaultEntryById(id: id);
+      if (vaultEntry == null) return null;
 
-      return _decryptVaultEntry(driftEntry);
+      return _decryptVaultEntry(vaultEntry);
     });
   }
 
@@ -67,11 +68,11 @@ class VaultRepositoryImpl implements VaultRepository {
     required String title,
   }) {
     return guardRepositoryCall(() async {
-      final driftEntries = await vaultLocalDataSource.getVaultEntriesByTitle(
+      final vaultEntries = await vaultLocalDataSource.getVaultEntriesByTitle(
         title: title,
       );
 
-      return await _decryptVaultEntries(driftEntries);
+      return await _decryptVaultEntries(vaultEntries);
     });
   }
 
@@ -81,10 +82,10 @@ class VaultRepositoryImpl implements VaultRepository {
   }) {
     return guardRepositoryCall(() async {
       final encryptedEntity = await vaultEntryCryptoMapper.encryptEntity(entry);
-      final driftEntry = _toDrift(encryptedEntity);
+      final vaultEntriesCompanion = encryptedEntity.toVaultEntriesCompanion();
 
       final success = await vaultLocalDataSource.updateVaultEntry(
-        entry: driftEntry,
+        entry: vaultEntriesCompanion,
       );
       if (!success) {
         throw const DatabaseFailure(message: 'Failed to update an entry');
@@ -102,30 +103,6 @@ class VaultRepositoryImpl implements VaultRepository {
   }
 
   Future<VaultEntryEntity> _decryptVaultEntry(VaultEntry e) async {
-    return await vaultEntryCryptoMapper.decryptEntity(_fromDrift(e));
+    return await vaultEntryCryptoMapper.decryptEntity(e.toVaultEntryEntity());
   }
-
-  VaultEntryEntity _fromDrift(VaultEntry e) => VaultEntryEntity(
-    id: e.id,
-    title: e.title,
-    contactNo: e.contactNo,
-    email: e.email,
-    username: e.username,
-    password: e.password,
-    notes: e.notes,
-    createdAt: e.createdAt,
-    updatedAt: e.updatedAt,
-  );
-
-  VaultEntriesCompanion _toDrift(VaultEntryEntity e) => VaultEntriesCompanion(
-    id: Value(e.id),
-    title: Value(e.title),
-    contactNo: Value(e.contactNo),
-    email: Value(e.email),
-    username: Value(e.username),
-    password: Value(e.password),
-    notes: Value(e.notes),
-    createdAt: Value(e.createdAt),
-    updatedAt: Value(e.updatedAt),
-  );
 }

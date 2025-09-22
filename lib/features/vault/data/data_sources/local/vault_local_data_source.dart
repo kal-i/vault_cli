@@ -7,4 +7,7 @@ abstract interface class VaultLocalDataSource {
   Future<List<VaultEntry>> getVaultEntriesByTitle({required String title});
   Future<bool> updateVaultEntry({required VaultEntriesCompanion entry});
   Future<int> deleteVaultEntry({required String id});
+  Future<void> insertAllVaultEntries({required List<VaultEntriesCompanion> entries});
+  Future<void> deleteVaultEntries();
+  Future<void> updateVaultEntries({required List<VaultEntriesCompanion> entries});
 }

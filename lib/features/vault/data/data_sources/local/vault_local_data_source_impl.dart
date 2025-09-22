@@ -2,6 +2,7 @@ import 'package:drift/drift.dart';
 
 import '../../../../../core/errors/database_failure.dart';
 import '../../../../../core/utils/guard_data_source_call.dart';
+
 import 'vault_database.dart';
 import 'vault_local_data_source.dart';
 
@@ -65,7 +66,7 @@ class VaultLocalDataSourceImpl implements VaultLocalDataSource {
   }
 
   @override
-  Future<void> insertVaultEntry({required VaultEntriesCompanion entry}) async {
+  Future<void> insertVaultEntry({required VaultEntriesCompanion entry}) {
     return guardDataSourceCall(
       () async {
         await db.into(db.vaultEntries).insert(entry);
@@ -77,7 +78,7 @@ class VaultLocalDataSourceImpl implements VaultLocalDataSource {
   }
 
   @override
-  Future<bool> updateVaultEntry({required VaultEntriesCompanion entry}) async {
+  Future<bool> updateVaultEntry({required VaultEntriesCompanion entry}) {
     return guardDataSourceCall(
       () async {
         return await db.update(db.vaultEntries).replace(entry);
@@ -85,6 +86,52 @@ class VaultLocalDataSourceImpl implements VaultLocalDataSource {
       name: 'VaultLocalDataSource.updateVaultEntry',
       mapError: (error) =>
           DatabaseFailure(message: 'Failed to update an entry: $error'),
+    );
+  }
+
+  @override
+  Future<void> insertAllVaultEntries({
+    required List<VaultEntriesCompanion> entries,
+  }) {
+    return guardDataSourceCall(
+      () async {
+        await db.batch((batch) {
+          batch.insertAll(db.vaultEntries, entries);
+        });
+      },
+      name: 'VaultLocalDataSource.insertAllVaultEntries',
+      mapError: (error) =>
+          DatabaseFailure(message: 'Failed to insert all entries: $error'),
+    );
+  }
+
+  @override
+  Future<void> deleteVaultEntries() {
+    return guardDataSourceCall(
+      () async {
+        await db.batch((batch) {
+          batch.deleteAll(db.vaultEntries);
+        });
+      },
+      name: 'VaultLocalDataSource.deleteVaultEntries',
+      mapError: (error) =>
+          DatabaseFailure(message: 'Failed to delete entries: $error'),
+    );
+  }
+
+  @override
+  Future<void> updateVaultEntries({
+    required List<VaultEntriesCompanion> entries,
+  }) {
+    return guardDataSourceCall(
+      () async {
+        await db.batch((batch) {
+          batch.replaceAll(db.vaultEntries, entries.map((e) => e).toList());
+        });
+      },
+      name: 'VaultLocalDataSource.updateAllEntries',
+      mapError: (error) =>
+          DatabaseFailure(message: 'Failed to update entries: $error'),
     );
   }
 }

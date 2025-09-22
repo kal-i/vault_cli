@@ -2,7 +2,7 @@ import 'package:fpdart/fpdart.dart';
 
 import '../../../../core/errors/failure.dart';
 import '../../../../core/usecase/usecase.dart';
-import '../entities/vault_entry_entity.dart';
+import '../entity/vault_entry_entity.dart';
 import '../repository/vault_repository.dart';
 
 /// Use case for getting an entry by [id].

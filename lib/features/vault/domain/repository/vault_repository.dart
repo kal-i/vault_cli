@@ -1,7 +1,7 @@
 import 'package:fpdart/fpdart.dart';
 
 import '../../../../core/errors/failure.dart';
-import '../entities/vault_entry_entity.dart';
+import '../entity/vault_entry_entity.dart';
 
 /// Defines an abstract interface contract for managing vault entries.
 abstract interface class VaultRepository {
