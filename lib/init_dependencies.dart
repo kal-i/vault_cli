@@ -14,7 +14,6 @@ import 'features/auth/domain/usecases/setup_new_master_password.dart';
 import 'features/auth/domain/usecases/unlock_vault.dart';
 import 'features/auth/domain/usecases/verify_recovery_answer.dart';
 import 'features/auth/presentation/bloc/vault_auth_bloc.dart';
-import 'features/startup/presentation/bloc/startup_bloc.dart';
 import 'features/vault/data/data_sources/local/db_utils.dart';
 import 'features/vault/data/data_sources/local/vault_database.dart';
 import 'features/vault/data/data_sources/local/vault_local_data_source.dart';

@@ -5,7 +5,6 @@ final serviceLocator = GetIt.instance;
 Future<void> initializeDependencies() async {
   _registerCoreDependencies();
   _registerServicesDependencies();
-  _registerStartupDependencies();
   await _registerVaultLocalDependencies();
   _registerVaultAuthDependencies();
 }
@@ -16,12 +15,6 @@ void _registerServicesDependencies() {
   serviceLocator
     ..registerLazySingleton<SecureStorageService>(() => SecureStorageService())
     ..registerLazySingleton<CryptoService>(() => CryptoService());
-}
-
-void _registerStartupDependencies() {
-  _registerFactory<StartupBloc>(
-    () => StartupBloc(secureStorageService: serviceLocator()),
-  );
 }
 
 Future<void> _registerVaultLocalDependencies() async {
