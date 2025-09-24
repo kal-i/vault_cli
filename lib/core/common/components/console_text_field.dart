@@ -1,11 +1,18 @@
 import 'package:flutter/material.dart';
 
-import '../../../../config/theme/app_color.dart';
+import '../../../config/theme/app_color.dart';
+import '../../constants/context_path.dart';
 
 class ConsoleTextField extends StatelessWidget {
-  const ConsoleTextField({super.key, this.controller, this.onSubmitted});
+  const ConsoleTextField({
+    super.key,
+    this.controller,
+    required this.contextPath,
+    this.onSubmitted,
+  });
 
   final TextEditingController? controller;
+  final ValueNotifier<String> contextPath;
   final void Function(String)? onSubmitted;
 
   @override
@@ -20,7 +27,11 @@ class ConsoleTextField extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Text('vault>', style: textTheme.bodyMedium),
+          ValueListenableBuilder(
+            valueListenable: contextPath,
+            builder: (context, path, child) =>
+                Text(path, style: textTheme.bodyMedium),
+          ),
           Expanded(
             child: TextField(
               controller: controller,

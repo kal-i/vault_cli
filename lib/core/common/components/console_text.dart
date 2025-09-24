@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../../config/theme/app_color.dart';
+import '../../../config/theme/app_color.dart';
 
 class ConsoleText extends StatelessWidget {
   const ConsoleText({super.key, required this.text});
@@ -14,15 +14,16 @@ class ConsoleText extends StatelessWidget {
 
     final errorPattern = RegExp(r'\[ERROR.*?\]|\[UNKNOWN COMMAND.*?\]');
     final successPattern = RegExp(
-      r'\[FETCHED.*?\]|\[ENTRY FOUND.*?\]|\[NO VAULT.*?\]',
+      r'\[SUCCESS.*?\]|\[FETCHED.*?\]|\[QUESTION.*?\]|\[ENTRY FOUND.*?\]|\[NO VAULT.*?\]',
     );
-    final processPattern = RegExp(r'\[PROCESSING.*?\]|\[EXITING.*?\]');
+    final processPattern = RegExp(r'\[PROCESSING.*?\]|\[RETRIEVING.*?\]|\[EXITING.*?\]');
     final commandPattern = RegExp(
-      r'\b(add|list|get|update|delete|lock|clear|exit)\b',
+      r'\b(init|unlock|recovery|add|list|get|update|delete|lock|clear|exit)\b',
     );
     final flagPattern = RegExp(r'-[a-zA-Z]\b');
-    final placeholderPattern = RegExp(r'<[a-zA-Z0-9_]+>');
-    final informativePattern = RegExp(r'\b(tip|help)\b', caseSensitive: false);
+    final placeholderPattern = RegExp(r'<[a-zA-Z0-9_ ]+>');
+    final informativePattern = RegExp(r'\b(help)\b|\b(tip)\b|\b(next step)\b|\b(cd)\b', caseSensitive: false);
+
 
     TextSpan highlightConsoleLine(String text) {
       final spans = <TextSpan>[];
