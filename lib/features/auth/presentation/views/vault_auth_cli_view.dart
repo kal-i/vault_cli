@@ -209,12 +209,46 @@ class _VaultAuthCliViewState extends State<VaultAuthCliView> {
     SystemNavigator.pop();
   }
 
+  bool _isAwaitingResetConfirmation = false;
+
   void _handleRecoveryAnswer(String input) {
-    if (input == 'cd') {
-      _contextPath.value = ContextPath.auth;
+    if (_isAwaitingResetConfirmation) {
+      switch (input) {
+        case 'y':
+          _appendLine('[RESET]: Resetting vault...');
+          _vaultAuthBloc.add(ResetVaultEvent());
+          _isAwaitingResetConfirmation = false;
+          break;
+        case 'n':
+          _appendLine('[CANCELLED]: Vault reset aborted.');
+          _isAwaitingResetConfirmation = false;
+          break;
+        default:
+          _appendLine('[ERROR]: Invalid input. Please confirm with [y/n].');
+          break;
+      }
       return;
     }
-    _vaultAuthBloc.add(VerifyVaultRecoveryAnswerEvent(recoveryAnswer: input));
+
+    switch (input) {
+      case 'cd':
+        _contextPath.value = ContextPath.auth;
+        break;
+      case 'reset':
+        _appendLines([
+          '[WARNING]: Are you sure you want to reset your vault? [y/n]',
+          '',
+          'Once reset, all entries will be deleted permanently.',
+          '',
+        ]);
+        _isAwaitingResetConfirmation = true;
+        break;
+      default:
+        _vaultAuthBloc.add(
+          VerifyVaultRecoveryAnswerEvent(recoveryAnswer: input),
+        );
+        break;
+    }
   }
 
   void _handleRecoverySetup(String command, List<String> args) {
@@ -303,6 +337,7 @@ class _VaultAuthCliViewState extends State<VaultAuthCliView> {
                       '',
                       'Please type your recovery answer and press Enter.',
                       'Tip: Type `cd` to cancel and go back.',
+                      'Warning: Use `reset` to initialize a new vault. This will erase all existing entries permanently.',
                     ]);
                     _contextPath.value = ContextPath.recovery;
                   }
@@ -332,6 +367,23 @@ class _VaultAuthCliViewState extends State<VaultAuthCliView> {
 
                   if (state is VaultAuthMasterPasswordUpdated) {
                     _printAndRedirectSuccess('Vault master password updated!');
+                  }
+
+                  if (state is VaultReset) {
+                    if (state.isSuccessful) {
+                      _appendLines([
+                        '[SUCCESS]: Vault reset completed!',
+                        '',
+                        'Next step: Initialize a new vault using the `init` command.',
+                      ]);
+                      _contextPath.value = ContextPath.auth;
+                    } else {
+                      _appendLines([
+                        '[ERROR]: Vault reset failed.',
+                        '',
+                        'Please try again or check system logs for details.',
+                      ]);
+                    }
                   }
 
                   if (state is VaultAuthError) {

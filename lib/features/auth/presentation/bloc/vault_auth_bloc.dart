@@ -5,6 +5,7 @@ import '../../../../core/utils/emit_result.dart';
 import '../../../../init_dependencies.dart';
 import '../../domain/entity/master_password_entity.dart';
 import '../../domain/usecases/initialize_vault.dart';
+import '../../domain/usecases/reset_vault.dart';
 import '../../domain/usecases/retrieve_recovery_question.dart';
 import '../../domain/usecases/setup_new_master_password.dart';
 import '../../domain/usecases/unlock_vault.dart';
@@ -19,17 +20,20 @@ class VaultAuthBloc extends Bloc<VaultAuthEvent, VaultAuthState> {
     required RetrieveRecoveryQuestion retrieveRecoveryQuestion,
     required VerifyRecoveryAnswer verifyRecoveryAnswer,
     required SetupNewMasterPassword setupNewMasterPassword,
+    required ResetVault resetVault,
   }) : _initializeVault = initializeVault,
        _unlockVault = unlockVault,
        _retrieveRecoveryQuestion = retrieveRecoveryQuestion,
        _verifyRecoveryAnswer = verifyRecoveryAnswer,
        _setupNewMasterPassword = setupNewMasterPassword,
+       _resetVault = resetVault,
        super(VaultAuthInitial()) {
     on<InitializeVaultEvent>(_onInitializeVault);
     on<UnlockVaultEvent>(_onUnlockVault);
     on<RetrieveVaultRecoveryQuestionEvent>(_onRetrieveVaultRecoveryQuestion);
     on<VerifyVaultRecoveryAnswerEvent>(_onVerifyVaultRecoveryAnswer);
     on<SetupNewMasterPasswordEvent>(_onSetupNewMasterPassword);
+    on<ResetVaultEvent>(_onResetVault);
   }
 
   final InitializeVault _initializeVault;
@@ -37,6 +41,7 @@ class VaultAuthBloc extends Bloc<VaultAuthEvent, VaultAuthState> {
   final RetrieveRecoveryQuestion _retrieveRecoveryQuestion;
   final VerifyRecoveryAnswer _verifyRecoveryAnswer;
   final SetupNewMasterPassword _setupNewMasterPassword;
+  final ResetVault _resetVault;
 
   void _onInitializeVault(
     InitializeVaultEvent event,
@@ -126,6 +131,20 @@ class VaultAuthBloc extends Bloc<VaultAuthEvent, VaultAuthState> {
         setupVaultRepositoryAndBloc(r);
         return VaultAuthMasterPasswordUpdated(secretKey: r);
       },
+    );
+  }
+
+  void _onResetVault(
+    ResetVaultEvent event,
+    Emitter<VaultAuthState> emit,
+  ) async {
+    emit(VaultAuthLoading());
+
+    await emitResult(
+      emit,
+      _resetVault(NoParams()),
+      onError: (l) => VaultAuthError(message: l),
+      onSuccess: (r) => VaultReset(isSuccessful: r),
     );
   }
 }

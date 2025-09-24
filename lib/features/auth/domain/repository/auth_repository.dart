@@ -23,4 +23,6 @@ abstract interface class AuthRepository {
     String? newRecoveryQuestion,
     String? newRecoveryAnswer,
   });
+
+  Future<Either<Failure, bool>> resetVault();
 }

@@ -58,3 +58,12 @@ final class VaultVerifiedRecoveryAnswer extends VaultAuthState {
   @override
   List<Object?> get props => [isSuccessful];
 }
+
+final class VaultReset extends VaultAuthState {
+  const VaultReset({required this.isSuccessful});
+
+  final bool isSuccessful;
+
+  @override
+  List<Object?> get props => [isSuccessful];
+}

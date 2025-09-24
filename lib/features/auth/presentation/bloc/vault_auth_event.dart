@@ -62,3 +62,5 @@ final class SetupNewMasterPasswordEvent extends VaultAuthEvent {
     newRecoveryAnswer,
   ];
 }
+
+final class ResetVaultEvent extends VaultAuthEvent {}

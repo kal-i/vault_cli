@@ -186,8 +186,9 @@ class AuthRepositoryImpl implements AuthRepository {
         final decryptedVaultEntryEntities = await Future.wait(
           encryptedVaultEntries
               .map(
-                (encryptedVaultEntry) async => await oldMapper
-                    .decryptEntity(encryptedVaultEntry.toVaultEntryEntity()),
+                (encryptedVaultEntry) async => await oldMapper.decryptEntity(
+                  encryptedVaultEntry.toVaultEntryEntity(),
+                ),
               )
               .toList(),
         );
@@ -203,7 +204,10 @@ class AuthRepositoryImpl implements AuthRepository {
           newDerivedKeyBytes,
         );
 
-        final newMapper = VaultEntryCryptoMapper(cryptoService: cryptoService, secretKey: newDerivedKey);
+        final newMapper = VaultEntryCryptoMapper(
+          cryptoService: cryptoService,
+          secretKey: newDerivedKey,
+        );
 
         // Re-encrypt entries with the new derive key
         final reEncryptedEntryEntries = await Future.wait(
@@ -242,9 +246,30 @@ class AuthRepositoryImpl implements AuthRepository {
 
         return newDerivedKey;
       },
-      name: 'AuthRepositor.setupNewPassword',
+      name: 'AuthRepository.setupNewPassword',
       onError: (error, stack) {
         return VaultFailure(message: 'Failed to setup new password: $error');
+      },
+    );
+  }
+
+  @override
+  Future<Either<Failure, bool>> resetVault() {
+    return guardRepositoryCall(
+      () async {
+        final masterPassword = await secureStorageService.getMasterPassword();
+        if (masterPassword == null) {
+          throw const VaultFailure(message: 'Vault not initialized');
+        }
+
+        await secureStorageService.clear();
+        await vaultLocalDataSource.deleteVaultEntries();
+
+        return true;
+      },
+      name: 'AuthRepository.resetVault',
+      onError: (error, stack) {
+        return VaultFailure(message: 'Failed to reset vault: $error');
       },
     );
   }
