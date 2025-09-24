@@ -20,7 +20,40 @@ Your data is protected with **industry-standard cryptography**:
 - **SHA-256** for hashing
     - To ensure data won't be retrieved to its original form even if local storage is compromised
 
-## Featured Commands
+## 🔑 Featured Commands
+
+### 🔐 Auth Commands
+| Command   | Usage                                                                          | Description                                                     |
+|-----------|--------------------------------------------------------------------------------|-----------------------------------------------------------------|
+| `init`    | `init -m <master password> -q <recovery question> -a <recovery answer>`        | Initialize a new vault with a master password and recovery Q&A. |
+| `unlock`  | `unlock -m <master password>`                                                  | Unlock the vault for use.                                       |
+| `set new` | `set new -m <master password> [-q <recovery question>] [-a <recovery answer>]` | Set a new master password, optionally updating recovery Q&A.    |
+| `recover` | `recover`                                                                      | Recover vault access using recovery question and answer.        |
+
+---
+
+### 📦 Vault Commands
+| Command  | Usage                                                                                                  | Description                           |
+|----------|--------------------------------------------------------------------------------------------------------|---------------------------------------|
+| `add`    | `add -t <title> -p <password> [-u <username>] [-e <email>] [-c <contact>] [-n <notes>]`                | Add a new entry.                      |
+| `list`   | <pre>list all<br>list -t &lt;title&gt;</pre>                                                           | Show all entries or filter by title.  |
+| `get`    | `get -i <id>`                                                                                          | Retrieve a specific entry by ID.      |
+| `update` | `update -i <id> [-t <title>] [-p <password>] [-u <username>] [-e <email>] [-c <contact>] [-n <notes>]` | Update an existing entry.             |
+| `delete` | <pre>delete all<br>delete -i &lt;id&gt;</pre>                                                          | Delete all entries or a specific one. |
+| `lock`   | `lock`                                                                                                 | Lock the vault manually.              |
+
+---
+
+### ⚙️ Shared Commands
+| Command | Description             |
+|---------|-------------------------|
+| `help`  | See available commands. |
+| `clear` | Clear the console.      |
+| `exit`  | Exit the app.           |
+
+---
+
+💡 **Tip:** Just type the command name and press **Enter** to execute.
 
 ## 📦 Features (Current)
 - Master password setup and vault initialization
@@ -39,24 +72,14 @@ Your data is protected with **industry-standard cryptography**:
 
 ## 🖼 Screenshots
 
-**Master Password Setup**  
-![Master Password Setup](assets/images/master_password_setup.png)
+**Splash Screen**  
+![Splash](assets/images/splash.png)
 
-**Help Command**  
-![Help Command](assets/images/help_command.png)
+**Auth CLI**  
+![Auth CLI](assets/images/auth_cli.png)
 
-**Adding an Entry**  
-![Add Entry](assets/images/add_entry.png)
-
-**Listing Entries**  
-![List Entries](assets/images/list_entries.png)
-
-**Updating an Entry**  
-![Update Entry](assets/images/update_entry.png)
-
-**Deleting an Entry**
-![Delete Entry](assets/images/delete_entry.png)
-
+**Vault CLI (Main)**  
+![Vault CLI](assets/images/vault_cli.png)
 
 ## 🧑‍💻 Tech Stack
 - **Flutter/Dart**
