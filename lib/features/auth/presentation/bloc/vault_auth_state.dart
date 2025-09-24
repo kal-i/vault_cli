@@ -11,13 +11,25 @@ final class VaultAuthInitial extends VaultAuthState {}
 
 final class VaultAuthLoading extends VaultAuthState {}
 
-final class VaultAuthSuccess extends VaultAuthState {
+abstract class VaultAuthSuccess extends VaultAuthState {
   const VaultAuthSuccess({required this.secretKey});
 
   final dynamic secretKey;
 
   @override
   List<Object?> get props => [secretKey];
+}
+
+final class VaultAuthInitialized extends VaultAuthSuccess {
+  const VaultAuthInitialized({required super.secretKey});
+}
+
+final class VaultAuthUnlocked extends VaultAuthSuccess {
+  const VaultAuthUnlocked({required super.secretKey});
+}
+
+final class VaultAuthMasterPasswordUpdated extends VaultAuthSuccess {
+  const VaultAuthMasterPasswordUpdated({required super.secretKey});
 }
 
 final class VaultAuthError extends VaultAuthState {
