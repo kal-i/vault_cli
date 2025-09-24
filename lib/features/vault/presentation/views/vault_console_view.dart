@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../../init_dependencies.dart';
+import '../../../../core/constants/context_path.dart';
+import '../../../../core/utils/flag_parser.dart';
+import '../../../auth/presentation/views/vault_auth_cli_view.dart';
 import '../../domain/entity/vault_entry_entity.dart';
 import '../bloc/vault_bloc.dart';
-import '../components/console_text.dart';
-import '../components/console_text_field.dart';
+import '../../../../core/common/components/console_text.dart';
+import '../../../../core/common/components/console_text_field.dart';
 
 class VaultConsoleView extends StatefulWidget {
   const VaultConsoleView({super.key});
@@ -15,15 +18,34 @@ class VaultConsoleView extends StatefulWidget {
 }
 
 class _VaultConsoleViewState extends State<VaultConsoleView> {
-  final ValueNotifier<List<String>> _consoleLines = ValueNotifier([
-    'vault_cli v1.0',
-    '',
-    'Welcome to your offline CLI-based password vault.',
-    'Type \'help\' to see available commands.',
-  ]);
+  final ValueNotifier<List<String>> _consoleLines = ValueNotifier(
+    _initConsoleLines(),
+  );
+  final ValueNotifier<String> _contextPath = ValueNotifier(ContextPath.vault);
 
   final _commandController = TextEditingController();
   final _scrollController = ScrollController();
+
+  static List<String> _initConsoleLines() => [
+    'vault_cli v1.0',
+    '',
+    'Welcome to the main console.',
+    'Current directory: vault',
+    'Type `help` to see available commands.',
+  ];
+
+  static const _commandUsages = {
+    'add':
+        ' add -t <title> -p <password> [-u <username>] [-e <email>] [-c <contact>] [-n <notes>]',
+    'list': '''
+ list all          - Show all entries.
+ list -t <title>   - Show filtered entries by title.
+          ''',
+    'get': '  get -i <id>',
+    'update':
+        ' update -i <id> [-t <title>] [-p <password>] [-u <username>] [-e <email>] [-c <contact>] [-n <notes>]',
+    'delete': '  delete -i <id>',
+  };
 
   void _appendLines(List<String> lines) {
     _consoleLines.value = [..._consoleLines.value, ...lines];
@@ -44,39 +66,14 @@ class _VaultConsoleViewState extends State<VaultConsoleView> {
     });
   }
 
-  Map<String, String?> _parseFlags(List<String> args) {
-    final result = <String, String?>{};
-    for (var i = 0; i < args.length; i++) {
-      final arg = args[i];
-      if (arg.startsWith('-')) {
-        final key = arg.substring(1);
-
-        // For -n flag, capture all words or until next flag
-        if (key == 'n') {
-          final buffer = <String>[];
-          i++;
-          while (i < args.length && !args[i].startsWith('-')) {
-            buffer.add(args[i]);
-            i++;
-          }
-          i--;
-          result[key] = buffer.join(' ');
-        } else {
-          if (i + 1 < args.length && !args[i + 1].startsWith('-')) {
-            result[key] = args[i + 1];
-            i++;
-          } else {
-            result[key] = null;
-          }
-        }
-      }
-    }
-    return result;
-  }
-
-  void _printUsage({required String usage, bool hasMoreThanOneFlag = true}) {
+  void _printUsage({
+    required String usage,
+    bool hasMoreThanOneFlag = true,
+    bool isError = false,
+  }) {
     _appendLines([
-      '[ERROR]: Missing required ${hasMoreThanOneFlag ? 'flags' : 'flag'}',
+      if (isError)
+        '[ERROR]: Missing required ${hasMoreThanOneFlag ? 'flags' : 'flag'}.',
       'Usage:',
       usage,
     ]);
@@ -94,120 +91,186 @@ class _VaultConsoleViewState extends State<VaultConsoleView> {
 
     switch (command) {
       case 'help':
-        _appendLines([
-          '',
-          'Available Commands:',
-          ' add               - Add a new entry',
-          ' list              - Show all stored entries',
-          ' list -t <title>   - Show entries by title',
-          ' get -i <id>       - Retrieve an entry',
-          ' update -i <id>    - Update an existing entry',
-          ' delete -i <id>    - Delete an entry',
-          ' lock              - Lock the vault',
-          ' clear             - Clear the screen',
-          ' exit              - Exit the app',
-          '',
-          'Tip: Type command name + Enter to execute.',
-        ]);
+        _printHelp();
         break;
       case 'add':
-        final flags = _parseFlags(args);
-        final title = flags['t'];
-        final password = flags['p'];
-
-        if (title == null || password == null) {
-          _printUsage(
-            usage:
-                ' add -t <title> -p <password> [-u <username>] [-e <email>] [-c <contact>] [-n <notes>]',
-          );
-          break;
-        }
-
-        vaultBloc.add(
-          AddVaultEntryEvent(
-            title: title,
-            password: password,
-            username: flags['u'],
-            email: flags['e'],
-            contactNo: flags['c'],
-            notes: flags['n'],
-          ),
-        );
+        _handleAdd(args, vaultBloc);
         break;
       case 'list':
-        if (args.isNotEmpty) {
-          final flag = _parseFlags(args);
-          final title = flag['t'];
-
-          if (title == null) {
-            _printUsage(usage: ' list -t <title>', hasMoreThanOneFlag: false);
-            break;
-          }
-
-          vaultBloc.add(GetVaultEntriesByTitleEvent(title: title));
-        } else {
-          vaultBloc.add(GetAllVaultEntriesEvent());
-        }
+        _handleList(args, vaultBloc);
         break;
       case 'get':
-        final flag = _parseFlags(args);
-        final id = flag['i'];
-
-        if (id == null) {
-          _printUsage(usage: '  get -i <id>', hasMoreThanOneFlag: false);
-          break;
-        }
-
-        vaultBloc.add(GetVaultEntryByIdEvent(id: id));
+        _handleGet(args, vaultBloc);
         break;
       case 'update':
-        final flags = _parseFlags(args);
-        final id = flags['i'];
-
-        if (id == null) {
-          _printUsage(
-            usage:
-                ' update -i <id> [-t <title>] [-p <password>] [-u <username>] [-e <email>] [-c <contact>] [-n <notes>]',
-          );
-          break;
-        }
-
-        vaultBloc.add(
-          UpdateVaultEntryEvent(
-            id: id,
-            title: flags['t'],
-            password: flags['p'],
-            username: flags['u'],
-            email: flags['e'],
-            contactNo: flags['c'],
-            notes: flags['n'],
-          ),
-        );
+        _handleUpdate(args, vaultBloc);
         break;
       case 'delete':
-        final flags = _parseFlags(args);
-        final id = flags['i'];
-
-        if (id == null) {
-          _printUsage(usage: '  delete -i <id>', hasMoreThanOneFlag: false);
-          break;
-        }
-        vaultBloc.add(DeleteVaultEntryEvent(id: id));
+        _handleDelete(args, vaultBloc);
+        break;
+      case 'lock':
+        _lock();
         break;
       case 'clear':
-        _consoleLines.value = [];
+        _consoleLines.value = _initConsoleLines();
         break;
       case 'exit':
-        _appendLine('[EXITING...]');
+        _exit();
         break;
       default:
-        _appendLine('[UNKNOWN COMMAND]: $command');
+        _appendLine('[UNKNOWN COMMAND]: $command.');
     }
+  }
+
+  void _printHelp() {
+    _appendLines([
+      '',
+      'Available Commands:',
+      ' help      - See available commands.',
+      ' add       - Add a new entry.',
+      ' list      - Show stored entries.',
+      ' get       - Retrieve an entry.',
+      ' update    - Update an existing entry.',
+      ' delete    - Delete entries.',
+      ' lock      - Lock the vault.',
+      ' clear     - Clear the console.',
+      ' exit      - Exit the app.',
+      '',
+      'Tip: Type command name + Enter to execute.',
+    ]);
+  }
+
+  void _handleAdd(List<String> args, VaultBloc vaultBloc) {
+    final usage = _commandUsages['add']!;
+    if (args.isEmpty) return _printUsage(usage: usage);
+
+    final flags = flagParser(args);
+    final title = flags['t'];
+    final password = flags['p'];
+
+    if (title == null || password == null) {
+      return _printUsage(usage: usage, isError: true);
+    }
+
+    vaultBloc.add(
+      AddVaultEntryEvent(
+        title: title,
+        password: password,
+        username: flags['u'],
+        email: flags['e'],
+        contactNo: flags['c'],
+        notes: flags['n'],
+      ),
+    );
+  }
+
+  void _handleList(List<String> args, VaultBloc vaultBloc) {
+    final usage = _commandUsages['list']!;
+
+    if (args.isEmpty) return _printUsage(usage: usage);
+
+    final subCommand = args.first;
+
+    switch (subCommand) {
+      case 'all':
+        vaultBloc.add(GetAllVaultEntriesEvent());
+        break;
+      case '-t':
+        if (args.length < 2) {
+          return _printUsage(
+            usage: '  list -t <title>',
+            hasMoreThanOneFlag: false,
+            isError: true,
+          );
+        }
+        final title = args[1];
+        vaultBloc.add(GetVaultEntriesByTitleEvent(title: title));
+        break;
+      default:
+        _printUsage(usage: usage, isError: true);
+        break;
+    }
+  }
+
+  void _handleGet(List<String> args, VaultBloc vaultBloc) {
+    final usage = _commandUsages['get']!;
+    if (args.isEmpty) return _printUsage(usage: usage);
+
+    final flag = flagParser(args);
+    final id = flag['i'];
+
+    if (id == null) {
+      return _printUsage(
+        usage: usage,
+        hasMoreThanOneFlag: false,
+        isError: true,
+      );
+    }
+
+    vaultBloc.add(GetVaultEntryByIdEvent(id: id));
+  }
+
+  void _handleUpdate(List<String> args, VaultBloc vaultBloc) {
+    final usage = _commandUsages['update']!;
+    if (args.isEmpty) return _printUsage(usage: usage);
+
+    final flags = flagParser(args);
+    final id = flags['i'];
+
+    if (id == null) {
+      return _printUsage(usage: usage, isError: true);
+    }
+
+    vaultBloc.add(
+      UpdateVaultEntryEvent(
+        id: id,
+        title: flags['t'],
+        password: flags['p'],
+        username: flags['u'],
+        email: flags['e'],
+        contactNo: flags['c'],
+        notes: flags['n'],
+      ),
+    );
+  }
+
+  void _handleDelete(List<String> args, VaultBloc vaultBloc) {
+    final usage = _commandUsages['delete']!;
+
+    if (args.isEmpty) return _printUsage(usage: usage);
+
+    final flags = flagParser(args);
+    final id = flags['i'];
+
+    if (id == null) {
+      return _printUsage(
+        usage: '  delete -i <id>',
+        hasMoreThanOneFlag: false,
+        isError: true,
+      );
+    }
+    vaultBloc.add(DeleteVaultEntryEvent(id: id));
+  }
+
+  void _lock() async {
+    _appendLine('[LOCK]: App will be lock in 3 seconds...');
+    await Future.delayed(const Duration(seconds: 3));
+    if (!context.mounted) return;
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => const VaultAuthCliView()),
+    );
+  }
+
+  void _exit() async {
+    _appendLine('[EXIT]: App will close in 3 seconds...');
+    await Future.delayed(const Duration(seconds: 3));
+    SystemNavigator.pop();
   }
 
   void _onSubmitted(String input) {
     if (input.trim().isEmpty) return;
-    _appendLine('vault> $input');
+    _appendLine('${_contextPath.value} $input');
     _commandController.clear();
     _handleCommand(input);
   }
@@ -261,6 +324,7 @@ class _VaultConsoleViewState extends State<VaultConsoleView> {
   @override
   void dispose() {
     _consoleLines.dispose();
+    _contextPath.dispose();
     _commandController.dispose();
     _scrollController.dispose();
     super.dispose();
@@ -299,14 +363,15 @@ class _VaultConsoleViewState extends State<VaultConsoleView> {
                     }
                   } else if (state is EntryLoaded) {
                     if (state.vaultEntryEntity != null) {
-                      _appendLines(
-                        _formatEntry(entry: state.vaultEntryEntity!),
-                      );
+                      _appendLines([
+                        '[FETCHED ENTRY]',
+                        ..._formatEntry(entry: state.vaultEntryEntity!),
+                      ]);
                     } else {
-                      _appendLine('[ERROR]: ENTRY NOT FOUND');
+                      _appendLine('[ERROR]: ENTRY NOT FOUND.');
                     }
                   } else if (state is ErrorVault) {
-                    _appendLine('[ERROR]: ${state.message}');
+                    _appendLine('[ERROR]: ${state.message}.');
                   }
                 },
                 child: ValueListenableBuilder(
@@ -327,6 +392,7 @@ class _VaultConsoleViewState extends State<VaultConsoleView> {
 
             ConsoleTextField(
               controller: _commandController,
+              contextPath: _contextPath,
               onSubmitted: _onSubmitted,
             ),
           ],
