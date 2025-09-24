@@ -56,7 +56,7 @@ class VaultAuthBloc extends Bloc<VaultAuthEvent, VaultAuthState> {
       onError: (l) => VaultAuthError(message: l),
       onSuccess: (r) {
         setupVaultRepositoryAndBloc(r);
-        return VaultAuthSuccess(secretKey: r);
+        return VaultAuthInitialized(secretKey: r);
       },
     );
   }
@@ -73,7 +73,7 @@ class VaultAuthBloc extends Bloc<VaultAuthEvent, VaultAuthState> {
       onError: (l) => VaultAuthError(message: l),
       onSuccess: (r) {
         setupVaultRepositoryAndBloc(r);
-        return VaultAuthSuccess(secretKey: r);
+        return VaultAuthUnlocked(secretKey: r);
       },
     );
   }
@@ -124,7 +124,7 @@ class VaultAuthBloc extends Bloc<VaultAuthEvent, VaultAuthState> {
       onError: (l) => VaultAuthError(message: l),
       onSuccess: (r) {
         setupVaultRepositoryAndBloc(r);
-        return VaultAuthSuccess(secretKey: r);
+        return VaultAuthMasterPasswordUpdated(secretKey: r);
       },
     );
   }
