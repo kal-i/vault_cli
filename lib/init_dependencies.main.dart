@@ -58,6 +58,9 @@ void _registerVaultAuthDependencies() {
     ..registerLazySingleton<SetupNewMasterPassword>(
       () => SetupNewMasterPassword(authRepository: serviceLocator()),
     )
+    ..registerLazySingleton<ResetVault>(
+      () => ResetVault(authRepository: serviceLocator()),
+    )
     ..registerFactory<VaultAuthBloc>(
       () => VaultAuthBloc(
         initializeVault: serviceLocator(),
@@ -65,6 +68,7 @@ void _registerVaultAuthDependencies() {
         retrieveRecoveryQuestion: serviceLocator(),
         verifyRecoveryAnswer: serviceLocator(),
         setupNewMasterPassword: serviceLocator(),
+        resetVault: serviceLocator(),
       ),
     );
 }
@@ -102,6 +106,9 @@ void setupVaultRepositoryAndBloc(SecretKey secretKey) {
   _registerLazySingleton<DeleteVaultEntry>(
     () => DeleteVaultEntry(vaultRepository: serviceLocator()),
   );
+  _registerLazySingleton<DeleteAllEntries>(
+    () => DeleteAllEntries(vaultRepository: serviceLocator()),
+  );
   _registerFactory<VaultBloc>(
     () => VaultBloc(
       addVaultEntry: serviceLocator(),
@@ -110,6 +117,7 @@ void setupVaultRepositoryAndBloc(SecretKey secretKey) {
       getVaultEntriesByTitle: serviceLocator(),
       updateVaultEntry: serviceLocator(),
       deleteVaultEntry: serviceLocator(),
+      deleteAllEntries: serviceLocator(),
     ),
   );
 }

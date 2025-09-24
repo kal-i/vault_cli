@@ -9,6 +9,7 @@ import 'core/utils/vault_entry_crypto_mapper.dart';
 import 'features/auth/data/repository/auth_repository_impl.dart';
 import 'features/auth/domain/repository/auth_repository.dart';
 import 'features/auth/domain/usecases/initialize_vault.dart';
+import 'features/auth/domain/usecases/reset_vault.dart';
 import 'features/auth/domain/usecases/retrieve_recovery_question.dart';
 import 'features/auth/domain/usecases/setup_new_master_password.dart';
 import 'features/auth/domain/usecases/unlock_vault.dart';
@@ -21,6 +22,7 @@ import 'features/vault/data/data_sources/local/vault_local_data_source_impl.dart
 import 'features/vault/data/repository/vault_repository_impl.dart';
 import 'features/vault/domain/repository/vault_repository.dart';
 import 'features/vault/domain/usecases/add_vault_entry.dart';
+import 'features/vault/domain/usecases/delete_all_entries.dart';
 import 'features/vault/domain/usecases/delete_vault_entry.dart';
 import 'features/vault/domain/usecases/get_all_vault_entries.dart';
 import 'features/vault/domain/usecases/get_vault_entries_by_title.dart';
