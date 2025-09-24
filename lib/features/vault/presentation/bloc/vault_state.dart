@@ -64,3 +64,5 @@ final class ErrorVault extends VaultState {
   @override
   List<Object?> get props => [message];
 }
+
+final class ClearedVault extends VaultState {}

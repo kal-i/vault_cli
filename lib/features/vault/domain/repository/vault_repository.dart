@@ -17,4 +17,5 @@ abstract interface class VaultRepository {
     required VaultEntryEntity entry,
   });
   Future<Either<Failure, bool>> deleteEntry({required String id});
+  Future<Either<Failure, void>> deleteAllEntries();
 }

@@ -44,7 +44,10 @@ class _VaultConsoleViewState extends State<VaultConsoleView> {
     'get': '  get -i <id>',
     'update':
         ' update -i <id> [-t <title>] [-p <password>] [-u <username>] [-e <email>] [-c <contact>] [-n <notes>]',
-    'delete': '  delete -i <id>',
+    'delete': '''
+  delete all        - Delete all entries.
+  delete -i <id>    - Delete an entry.  
+    ''',
   };
 
   void _appendLines(List<String> lines) {
@@ -239,21 +242,35 @@ class _VaultConsoleViewState extends State<VaultConsoleView> {
 
     if (args.isEmpty) return _printUsage(usage: usage);
 
-    final flags = flagParser(args);
-    final id = flags['i'];
+    final subCommand = args.first;
 
-    if (id == null) {
-      return _printUsage(
-        usage: '  delete -i <id>',
-        hasMoreThanOneFlag: false,
-        isError: true,
-      );
+    switch (subCommand) {
+      case 'all':
+        vaultBloc.add(DeleteAllEntriesEvent());
+        break;
+      case '-i':
+        if (args.length < 2) {
+          return _printUsage(
+            usage: ' delete -i <id>',
+            hasMoreThanOneFlag: false,
+            isError: true,
+          );
+        }
+        final id = args[1];
+        vaultBloc.add(DeleteVaultEntryEvent(id: id));
+        break;
+      default:
+        _printUsage(usage: usage, isError: true);
+        break;
     }
-    vaultBloc.add(DeleteVaultEntryEvent(id: id));
   }
 
   void _lock() async {
-    _appendLine('[LOCK]: App will be lock in 3 seconds...');
+    _appendLines([
+      '[LOCK]: App will be lock in 3 seconds...',
+      '',
+      'Redirecting you to the auth...',
+    ]);
     await Future.delayed(const Duration(seconds: 3));
     if (!context.mounted) return;
     Navigator.pushReplacement(
@@ -341,7 +358,9 @@ class _VaultConsoleViewState extends State<VaultConsoleView> {
                 listener: (context, state) {
                   if (state is LoadingVault) {
                     _appendLine('[PROCESSING REQUEST...]');
-                  } else if (state is LoadedVault) {
+                  }
+
+                  if (state is LoadedVault) {
                     final vaultEntries = state.vaultEntryEntities;
                     final vaultEntriesLength = vaultEntries.length;
                     final fetchedCountMessage = vaultEntriesLength > 0
@@ -361,7 +380,9 @@ class _VaultConsoleViewState extends State<VaultConsoleView> {
                         ),
                       );
                     }
-                  } else if (state is EntryLoaded) {
+                  }
+
+                  if (state is EntryLoaded) {
                     if (state.vaultEntryEntity != null) {
                       _appendLines([
                         '[FETCHED ENTRY]',
@@ -370,7 +391,13 @@ class _VaultConsoleViewState extends State<VaultConsoleView> {
                     } else {
                       _appendLine('[ERROR]: ENTRY NOT FOUND.');
                     }
-                  } else if (state is ErrorVault) {
+                  }
+
+                  if (state is ClearedVault) {
+                    _appendLine('[CLEARED]: Vault is now empty.');
+                  }
+
+                  if (state is ErrorVault) {
                     _appendLine('[ERROR]: ${state.message}.');
                   }
                 },

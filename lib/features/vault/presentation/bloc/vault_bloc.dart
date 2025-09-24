@@ -7,6 +7,7 @@ import '../../../../core/utils/emit_result.dart';
 import '../../../../core/utils/id_generator.dart';
 import '../../domain/entity/vault_entry_entity.dart';
 import '../../domain/usecases/add_vault_entry.dart';
+import '../../domain/usecases/delete_all_entries.dart';
 import '../../domain/usecases/delete_vault_entry.dart';
 import '../../domain/usecases/get_all_vault_entries.dart';
 import '../../domain/usecases/get_vault_entries_by_title.dart';
@@ -24,12 +25,14 @@ class VaultBloc extends Bloc<VaultEvent, VaultState> {
     required GetVaultEntriesByTitle getVaultEntriesByTitle,
     required UpdateVaultEntry updateVaultEntry,
     required DeleteVaultEntry deleteVaultEntry,
+    required DeleteAllEntries deleteAllEntries,
   }) : _addVaultEntry = addVaultEntry,
        _getAllVaultEntries = getAllVaultEntries,
        _getVaultEntryById = getVaultEntryById,
        _getVaultEntriesByTitle = getVaultEntriesByTitle,
        _updateVaultEntry = updateVaultEntry,
        _deleteVaultEntry = deleteVaultEntry,
+       _deleteAllEntries = deleteAllEntries,
        super(InitialVault()) {
     on<AddVaultEntryEvent>(_onAddVaultEntry);
     on<GetAllVaultEntriesEvent>(_onGetAllVaultEntries);
@@ -37,6 +40,7 @@ class VaultBloc extends Bloc<VaultEvent, VaultState> {
     on<GetVaultEntriesByTitleEvent>(_onGetVaultEntriesByTitle);
     on<UpdateVaultEntryEvent>(_onUpdateVaultEntry);
     on<DeleteVaultEntryEvent>(_onDeleteVaultEntry);
+    on<DeleteAllEntriesEvent>(_onDeleteVaultEntries);
   }
 
   final AddVaultEntry _addVaultEntry;
@@ -45,6 +49,7 @@ class VaultBloc extends Bloc<VaultEvent, VaultState> {
   final GetVaultEntriesByTitle _getVaultEntriesByTitle;
   final UpdateVaultEntry _updateVaultEntry;
   final DeleteVaultEntry _deleteVaultEntry;
+  final DeleteAllEntries _deleteAllEntries;
 
   void _onAddVaultEntry(
     AddVaultEntryEvent event,
@@ -166,6 +171,20 @@ class VaultBloc extends Bloc<VaultEvent, VaultState> {
       () => _getAllVaultEntries(NoParams()),
       (l) => ErrorVault(message: l),
       (r) => LoadedVault(vaultEntryEntities: r),
+    );
+  }
+
+  void _onDeleteVaultEntries(
+    DeleteAllEntriesEvent event,
+    Emitter<VaultState> emit,
+  ) async {
+    emit(LoadingVault());
+
+    await emitResult(
+      emit,
+      _deleteAllEntries(NoParams()),
+      onError: (l) => ErrorVault(message: l),
+      onSuccess: (r) => ClearedVault(),
     );
   }
 }

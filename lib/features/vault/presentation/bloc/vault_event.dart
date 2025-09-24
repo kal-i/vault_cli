@@ -94,3 +94,5 @@ final class DeleteVaultEntryEvent extends VaultEvent {
   @override
   List<Object?> get props => [id];
 }
+
+final class DeleteAllEntriesEvent extends VaultEvent {}
