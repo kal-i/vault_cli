@@ -23,17 +23,29 @@ class VaultAuthCliView extends StatefulWidget {
 class _VaultAuthCliViewState extends State<VaultAuthCliView> {
   late final VaultAuthBloc _vaultAuthBloc;
 
-  final ValueNotifier<List<String>> _consoleLines = ValueNotifier([
+  final ValueNotifier<List<String>> _consoleLines = ValueNotifier(
+    _initConsoleLines(),
+  );
+  final ValueNotifier<String> _contextPath = ValueNotifier(ContextPath.auth);
+
+  final _commandController = TextEditingController();
+  final _scrollController = ScrollController();
+
+  static List<String> _initConsoleLines() => [
     'vault_cli v1.0',
     '',
     'Welcome to your offline CLI-based password vault manager.',
     'Current directory: auth',
     'Type `help` to see available commands.',
-  ]);
-  final ValueNotifier<String> _contextPath = ValueNotifier(ContextPath.auth);
+  ];
 
-  final _commandController = TextEditingController();
-  final _scrollController = ScrollController();
+  static const _commandUsages = {
+    'unlock': '  unlock -m <master password>',
+    'init':
+        '  init -m <master password> -q <recovery question> -a <recovery answer>',
+    'set new':
+        '  set new -m <master password> [-q <recovery question>] [-a <recovery  answer>]',
+  };
 
   @override
   void initState() {
@@ -60,6 +72,13 @@ class _VaultAuthCliViewState extends State<VaultAuthCliView> {
     });
   }
 
+  void _onSubmitted(String input) {
+    if (input.trim().isEmpty) return;
+    _appendLine('${_contextPath.value} $input');
+    _commandController.clear();
+    _handleCommand(input);
+  }
+
   void _printUsage({
     required String usage,
     bool hasMoreThanOneFlag = true,
@@ -67,7 +86,7 @@ class _VaultAuthCliViewState extends State<VaultAuthCliView> {
   }) {
     _appendLines([
       if (isError)
-        '[ERROR]: Missing required ${hasMoreThanOneFlag ? 'flags' : 'flag'}',
+        '[ERROR]: Missing required ${hasMoreThanOneFlag ? 'flags' : 'flag'}.',
       'Usage:',
       usage,
     ]);
@@ -98,83 +117,90 @@ class _VaultAuthCliViewState extends State<VaultAuthCliView> {
   void _handleNormalMode(String command, List<String> args) {
     switch (command) {
       case 'help':
-        _appendLines([
-          '',
-          'Available Commands:',
-          ' help        - See available commands',
-          ' init        - Initialize vault',
-          ' unlock      - Unlock vault',
-          ' recovery    - Recover vault access',
-          ' clear       - Clear the console',
-          ' exit        - Exit the app',
-          '',
-          'Tip: Type command name + Enter to execute.',
-        ]);
+        _printHelp();
         break;
       case 'init':
-        const usage =
-            '  init -m <master password> -q <recovery question> -a <recovery answer>';
-
-        if (args.isEmpty) {
-          _printUsage(usage: usage);
-          break;
-        }
-
-        final flags = flagParser(args);
-        final masterPassword = flags['m'];
-        final recoveryQuestion = flags['q'];
-        final recoveryAnswer = flags['a'];
-
-        if (masterPassword == null ||
-            recoveryQuestion == null ||
-            recoveryAnswer == null) {
-          _printUsage(usage: usage, isError: true);
-          break;
-        }
-
-        _vaultAuthBloc.add(
-          InitializeVaultEvent(
-            masterPassword: masterPassword,
-            recoveryQuestion: recoveryQuestion,
-            recoveryAnswer: recoveryAnswer,
-          ),
-        );
+        _init(args);
         break;
       case 'unlock':
-        const usage = '  unlock -m <master password>';
-
-        if (args.isEmpty) {
-          _printUsage(usage: usage);
-          break;
-        }
-
-        final flags = flagParser(args);
-        final masterPassword = flags['m'];
-
-        if (masterPassword == null) {
-          _printUsage(usage: usage, hasMoreThanOneFlag: false, isError: true);
-          break;
-        }
-
-        _vaultAuthBloc.add(UnlockVaultEvent(masterPassword: masterPassword));
+        _unlock(args);
         break;
-      case 'recovery':
-        _appendLines(['[RETRIEVING RECOVERY QUESTION...]']);
-        _vaultAuthBloc.add(RetrieveVaultRecoveryQuestionEvent());
+      case 'recover':
+        _recover();
         break;
       case 'clear':
-        _consoleLines.value = [
-          'vault_cli v1.0',
-          'Current directory: auth',
-          'Type `help` to see available commands.',
-        ];
+        _consoleLines.value = _initConsoleLines();
         break;
       case 'exit':
         _exit();
         break;
       default:
-        _appendLine('[UNKNOWN COMMAND]: $command');
+        _appendLine('[UNKNOWN COMMAND]: $command.');
     }
+  }
+
+  void _printHelp() {
+    _appendLines([
+      '',
+      'Available Commands:',
+      ' help        - See available commands.',
+      ' init        - Initialize vault.',
+      ' unlock      - Unlock vault.',
+      ' recover     - Recover vault access.',
+      ' clear       - Clear the console.',
+      ' exit        - Exit the app.',
+      '',
+      'Tip: Type command name + Enter to execute.',
+    ]);
+  }
+
+  void _init(List<String> args) {
+    final usage = _commandUsages['init']!;
+
+    if (args.isEmpty) return _printUsage(usage: usage);
+
+    final flags = flagParser(args);
+    final masterPassword = flags['m'];
+    final recoveryQuestion = flags['q'];
+    final recoveryAnswer = flags['a'];
+
+    if (masterPassword == null ||
+        recoveryQuestion == null ||
+        recoveryAnswer == null) {
+      return _printUsage(usage: usage, isError: true);
+    }
+
+    _vaultAuthBloc.add(
+      InitializeVaultEvent(
+        masterPassword: masterPassword,
+        recoveryQuestion: recoveryQuestion,
+        recoveryAnswer: recoveryAnswer,
+      ),
+    );
+  }
+
+  void _unlock(List<String> args) {
+    final usage = _commandUsages['unlock']!;
+
+    if (args.isEmpty) return _printUsage(usage: usage);
+
+    final flags = flagParser(args);
+    final masterPassword = flags['m'];
+
+    if (masterPassword == null) {
+      return _printUsage(
+        usage: usage,
+        hasMoreThanOneFlag: false,
+        isError: true,
+      );
+    }
+
+    _vaultAuthBloc.add(UnlockVaultEvent(masterPassword: masterPassword));
+  }
+
+  void _recover() {
+    _appendLines(['[RETRIEVING RECOVERY QUESTION...]']);
+    _vaultAuthBloc.add(RetrieveVaultRecoveryQuestionEvent());
   }
 
   void _exit() async {
@@ -203,13 +229,9 @@ class _VaultAuthCliViewState extends State<VaultAuthCliView> {
       final recoveryQuestion = flags['q'];
       final recoveryAnswer = flags['a'];
 
+      final usage = _commandUsages['set new']!;
       if (masterPassword == null) {
-        _printUsage(
-          usage:
-              '  set new -m <master password> [-q <recovery question>] [-a <recovery  answer>]',
-          isError: true,
-        );
-        return;
+        return _printUsage(usage: usage, isError: true);
       }
 
       _vaultAuthBloc.add(
@@ -222,13 +244,6 @@ class _VaultAuthCliViewState extends State<VaultAuthCliView> {
     } else {
       _appendLine('[ERROR]: Invalid recovery setup command.');
     }
-  }
-
-  void _onSubmitted(String input) {
-    if (input.trim().isEmpty) return;
-    _appendLine('${_contextPath.value} $input');
-    _commandController.clear();
-    _handleCommand(input);
   }
 
   void _navigateToMainConsoleView() async {
@@ -249,7 +264,7 @@ class _VaultAuthCliViewState extends State<VaultAuthCliView> {
 
   void _printAndRedirectSuccess(String action) {
     _appendLines([
-      '[SUCCESS: $action',
+      '[SUCCESS]: $action',
       '',
       'Redirecting you to the main vault...',
     ]);
@@ -320,7 +335,7 @@ class _VaultAuthCliViewState extends State<VaultAuthCliView> {
                   }
 
                   if (state is VaultAuthError) {
-                    _appendLine('[ERROR]: ${state.message}');
+                    _appendLine('[ERROR]: ${state.message}.');
                   }
                 },
                 child: ValueListenableBuilder(
